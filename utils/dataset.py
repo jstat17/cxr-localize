@@ -221,7 +221,7 @@ def verify_sha1sums(padchest_path: Path) -> None:
         # calculate the SHA-1 sum of the file
         sha1 = hashlib.sha1()
 
-        print(filepath, end="")
+        print(filepath, end="", flush=True)
         try:
             with open(filepath, 'rb') as file:
                 # read the file in chunks to avoid memory issues with large files
