@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 import numpy as np
 import torch as th
 from torch.utils.data import DataLoader
+from torch.nn import DataParallel
 import skimage
 import torchxrayvision as xrv
 
@@ -15,7 +16,7 @@ from utils import transform
         python -m script.crop_lungs /path/to/images /path/to/cropped --batch_size <optional> -- num_workers <optional>
 """
 
-def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: int = 1, device: str = 'cuda'):
+def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: int = 1, device: str = 'cuda', parallel: bool = True):
     # prepare loading and saving paths
     save_path_masks = save_path / "masks"
     save_path_images = save_path / "images"
@@ -31,7 +32,11 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
         shuffle = False
     )
 
-    segm_model = xrv.baseline_models.chestx_det.PSPNet().to(device)
+    segm_model = xrv.baseline_models.chestx_det.PSPNet()
+    if parallel:
+        segm_model = DataParallel(segm_model)
+    segm_model = segm_model.to(device)
+
     right_lung_idx = segm_model.targets.index("Right Lung")
     left_lung_idx = segm_model.targets.index("Left Lung")
 
