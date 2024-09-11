@@ -1,8 +1,9 @@
-from utils import dataset
 from argparse import ArgumentParser
 from pathlib import Path
 import numpy as np
 from natsort import natsorted
+
+from utils import dataset
 
 """Extract specified files from PadChest.
    Run from cxr-localize:
