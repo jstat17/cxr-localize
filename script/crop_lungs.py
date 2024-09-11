@@ -20,8 +20,10 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
     # prepare loading and saving paths
     save_path_masks = save_path / "masks"
     save_path_images = save_path / "images"
+    save_path_logs = save_path / "logs"
     os.makedirs(save_path_masks, exist_ok=True)
     os.makedirs(save_path_images, exist_ok=True)
+    os.makedirs(save_path_logs, exist_ok=True)
 
     # prepare dataset loader
     dataset = XRVDataset(images_path)
@@ -94,7 +96,14 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
                 original_image_cropped = original_image[x1:x2, y1:y2]
                 
                 # save image
-                skimage.io.imsave(save_path_images / filename, original_image_cropped)
+                try:
+                    skimage.io.imsave(save_path_images / filename, original_image_cropped)
+                except IndexError:
+                    pass
+
+                # save log
+                with open(save_path_logs / f"{filename.split(".")[0]}.txt", 'w') as f:
+                    f.write(str({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}))
 
                 # save lungs mask after resizing them
                 lungs = lungs_batch[i].cpu().numpy()
