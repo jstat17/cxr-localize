@@ -61,7 +61,10 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
             lungs_batch = lungs_batch.to(th.uint8).cpu()
 
             # create bounding boxes from all lungs in batch
-            bounding_boxes_batch = transform.get_bounding_box_from_mask(lungs_batch)
+            try:
+                bounding_boxes_batch = transform.get_bounding_box_from_mask(lungs_batch)
+            except RuntimeError: # some bug in pytorch which can cause this when creating the non-zero indices
+                continue
 
             # iterate through each file
             for i, filename in enumerate(filenames):
