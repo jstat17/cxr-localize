@@ -102,7 +102,7 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
                     pass
 
                 # save log
-                with open(save_path_logs / f"{filename.split(".")[0]}.txt", 'w') as f:
+                with open(save_path_logs / f"{filename.split('.')[0]}.txt", 'w') as f:
                     f.write(str({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}))
 
                 # save lungs mask after resizing them
