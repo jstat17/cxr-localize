@@ -33,12 +33,12 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
     )
 
     segm_model = xrv.baseline_models.chestx_det.PSPNet()
+    right_lung_idx = segm_model.targets.index("Right Lung")
+    left_lung_idx = segm_model.targets.index("Left Lung")
+
     if parallel:
         segm_model = DataParallel(segm_model)
     segm_model = segm_model.to(device)
-
-    right_lung_idx = segm_model.targets.index("Right Lung")
-    left_lung_idx = segm_model.targets.index("Left Lung")
 
     for batch in dataloader:
         tensor_batch, original_sizes, filenames = batch
