@@ -32,19 +32,23 @@ class XRVDataset(Dataset):
         return len(self.filenames)
 
     def __getitem__(self, idx: int) -> tuple[th.Tensor, th.Tensor, th.Tensor]:
-        # load image
-        image_path = self.images_path / Path(self.filenames[idx])
-        image = skimage.io.imread(image_path)
-        original_size = list(image.shape) # (height, width)
+        try:
+            # load image
+            image_path = self.images_path / Path(self.filenames[idx])
+            image = skimage.io.imread(image_path)
+            original_size = list(image.shape) # (height, width)
 
-        # resize to 512 x 512
-        image = transform.resize(image, self.set_shape)
-        image = image[np.newaxis, :] # add channel dimension (1, H, W)
+            # resize to 512 x 512
+            image = transform.resize(image, self.set_shape)
+            image = image[np.newaxis, :] # add channel dimension (1, H, W)
 
-        # normalize to [-1024, 1024] and convert to float
-        image = xrv.datasets.normalize(image, np.iinfo(image.dtype).max)
+            # normalize to [-1024, 1024] and convert to float
+            image = xrv.datasets.normalize(image, np.iinfo(image.dtype).max)
 
-        # convert to PyTorch tensor
-        tensor = th.from_numpy(image).float()
+            # convert to PyTorch tensor
+            tensor = th.from_numpy(image).float()
 
-        return tensor, th.tensor(original_size), self.filenames[idx]
+            return tensor, th.tensor(original_size), self.filenames[idx]
+        
+        except OSError as e:
+            print(f"OSError in loading {image_path} : {e}")
