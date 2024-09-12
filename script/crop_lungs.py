@@ -120,6 +120,7 @@ if __name__ == "__main__":
     parser.add_argument('save_path', type=str, help="Desired save path for crops and masks")
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size of images to load at once")
     parser.add_argument('--num_workers', type=int, default=1, help="Number of CPU workers to use for the data loader")
+    parser.add_argument('--parallel', type=bool, default=True, help="Split computation across multiple GPUs in parallel")
 
     # parse command line arguments
     args = parser.parse_args()
@@ -127,10 +128,12 @@ if __name__ == "__main__":
     save_path = Path(args.save_path)
     batch_size = args.batch_size
     num_workers = args.num_workers
+    parallel = args.parallel
 
     main(
         images_path = images_path,
         save_path = save_path,
         batch_size = batch_size,
-        num_workers = num_workers
+        num_workers = num_workers,
+        parallel = parallel
     )
