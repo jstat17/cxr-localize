@@ -14,7 +14,7 @@ from utils import transform
 
 """Segment and crop out the lungs from images using TorchXRayVision.
    Run from cxr-localize:
-        python -m script.crop_lungs /path/to/images /path/to/cropped --batch_size <optional> -- num_workers <optional>
+        python -m script.crop_lungs /path/to/images /path/to/cropped --batch_size <optional> -- num_workers <optional> --parallel <optional> --force <optional>
 """
 
 def save_crop_and_mask(images_path: Path, save_path_images: Path, save_path_masks: Path, save_path_logs: Path,\
@@ -48,18 +48,30 @@ def save_crop_and_mask(images_path: Path, save_path_images: Path, save_path_mask
     # save image
     try:
         skimage.io.imsave(save_path_images / filename, original_image_cropped)
+
     except IndexError as e:
-        print(f"Index Error in saving cropped image: {e}")
+        print(f"IndexError in saving cropped image: {e}")
+
+    except OSError:
+        print(f"OSError in saving cropped image, crop could be blank: {e}")
 
     # save log
     with open(save_path_logs / f"{filename.split('.')[0]}.txt", 'w') as f:
         f.write(str({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}))
 
     # save lungs mask after resizing them
-    lungs = transform.resize(lungs, shape_original).astype(bool)
-    skimage.io.imsave(save_path_masks / filename, lungs)
+    try:
+        lungs = transform.resize(lungs, shape_original).astype(bool)
+        skimage.io.imsave(save_path_masks / filename, lungs)
 
-def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: int = 1, device: str = 'cuda', parallel: bool = True):
+    except IndexError as e:
+        print(f"IndexError in saving lungs: {e}")
+        
+    except OSError:
+        print(f"OSError in saving lungs, segmentation map could be blank: {e}")
+
+def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: int = 1,\
+         device: str = 'cuda', parallel: bool = True, force: bool = False):
     th.cuda.empty_cache()
     
     # prepare loading and saving paths
@@ -71,7 +83,11 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
     os.makedirs(save_path_logs, exist_ok=True)
 
     # prepare dataset loader
-    dataset = XRVDataset(images_path)
+    if force:
+        dataset = XRVDataset(images_path)
+    else:
+        dataset = XRVDataset(images_path, save_path_images)
+
     dataloader = DataLoader(
         dataset = dataset,
         batch_size = batch_size,
@@ -111,7 +127,7 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
             try:
                 bounding_boxes_batch = transform.get_bounding_box_from_mask(lungs_batch)
             except RuntimeError as e: # some bug in pytorch which can cause this when creating the non-zero indices
-                print(f"Runtime Error in creating bounding boxes from batch of masks: {e}")
+                print(f"RuntimeError in creating bounding boxes from batch of masks: {e}")
             
             # move to cpu and numpy
             bounding_boxes_batch = bounding_boxes_batch.cpu().numpy()
@@ -160,6 +176,7 @@ if __name__ == "__main__":
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size of images to load at once")
     parser.add_argument('--num_workers', type=int, default=1, help="Number of CPU workers to use for the data loader")
     parser.add_argument('--parallel', type=bool, default=True, help="Split computation across multiple GPUs in parallel")
+    parser.add_argument('--force', type=bool, default=False, help="Force cropping even if images have already been cropped previously")
 
     # parse command line arguments
     args = parser.parse_args()
@@ -168,11 +185,13 @@ if __name__ == "__main__":
     batch_size = args.batch_size
     num_workers = args.num_workers
     parallel = args.parallel
+    force = args.force
 
     main(
         images_path = images_path,
         save_path = save_path,
         batch_size = batch_size,
         num_workers = num_workers,
-        parallel = parallel
+        parallel = parallel,
+        force = force
     )

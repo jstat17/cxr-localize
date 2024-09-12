@@ -16,9 +16,17 @@ class XRVDataset(Dataset):
 
     set_shape: tuple[int, int] = (512, 512)
     
-    def __init__(self, images_path: Path):
+    def __init__(self, images_path: Path, save_path_images: Path | None = None):
         self.images_path = images_path
         self.filenames = os.listdir(self.images_path)
+
+        # remove images that have already been cropped previously
+        if save_path_images is not None:
+            filenames_existing_set = set(os.listdir(save_path_images))
+            filenames_set = set(self.filenames)
+            self.filenames = list(
+                filenames_set - filenames_existing_set
+            )
 
     def __len__(self) -> int:
         return len(self.filenames)
