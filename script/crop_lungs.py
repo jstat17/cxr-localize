@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader
 from torch.nn import DataParallel
 import skimage
 import torchxrayvision as xrv
+from concurrent.futures import ThreadPoolExecutor, wait, ALL_COMPLETED
 
 from utils.loader import XRVDataset
 from utils import transform
@@ -16,7 +17,51 @@ from utils import transform
         python -m script.crop_lungs /path/to/images /path/to/cropped --batch_size <optional> -- num_workers <optional>
 """
 
+def save_crop_and_mask(images_path: Path, save_path_images: Path, save_path_masks: Path, save_path_logs: Path,\
+                       x1: int, y1: int, x2: int, y2: int, filename: str, shape_current: tuple[int, int],\
+                       shape_original: tuple[int, int], lungs: np.ndarray) -> None:    
+    # resize bounding box to the original image's size
+    (x1, y1, x2, y2) = transform.scale_bounding_box(
+        x1 = x1,
+        y1 = y1, 
+        x2 = x2,
+        y2 = y2,
+        shape_old = shape_current,
+        shape_new = shape_original
+    )
+    
+    # make the bounding box square and fit to within the original image
+    (x1, y1, x2, y2) = transform.make_bounding_box_square(
+        x1 = x1,
+        y1 = y1, 
+        x2 = x2,
+        y2 = y2,
+        shape = shape_original,
+        allowance = 0.05
+    )
+    
+    # crop original image
+    original_image_path = images_path / filename
+    original_image = skimage.io.imread(original_image_path)
+    original_image_cropped = original_image[x1:x2, y1:y2]
+    
+    # save image
+    try:
+        skimage.io.imsave(save_path_images / filename, original_image_cropped)
+    except IndexError as e:
+        print(f"Index Error in saving cropped image: {e}")
+
+    # save log
+    with open(save_path_logs / f"{filename.split('.')[0]}.txt", 'w') as f:
+        f.write(str({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}))
+
+    # save lungs mask after resizing them
+    lungs = transform.resize(lungs, shape_original).astype(bool)
+    skimage.io.imsave(save_path_masks / filename, lungs)
+
 def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: int = 1, device: str = 'cuda', parallel: bool = True):
+    th.cuda.empty_cache()
+    
     # prepare loading and saving paths
     save_path_masks = save_path / "masks"
     save_path_images = save_path / "images"
@@ -40,6 +85,9 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
 
     if parallel:
         segm_model = DataParallel(segm_model)
+    else:
+        device += ":0"
+
     segm_model = segm_model.to(device)
 
     for batch in dataloader:
@@ -58,60 +106,51 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
             right_lung_batch = pred_batch[:, right_lung_idx]
             left_lung_batch = pred_batch[:, left_lung_idx]
             lungs_batch = right_lung_batch + left_lung_batch
-            lungs_batch = lungs_batch.to(th.uint8).cpu()
 
             # create bounding boxes from all lungs in batch
             try:
                 bounding_boxes_batch = transform.get_bounding_box_from_mask(lungs_batch)
-            except RuntimeError: # some bug in pytorch which can cause this when creating the non-zero indices
-                continue
+            except RuntimeError as e: # some bug in pytorch which can cause this when creating the non-zero indices
+                print(f"Runtime Error in creating bounding boxes from batch of masks: {e}")
+            
+            # move to cpu and numpy
+            bounding_boxes_batch = bounding_boxes_batch.cpu().numpy()
+            lungs_batch = lungs_batch.cpu().to(th.uint8).numpy()
 
-            # iterate through each file
-            for i, filename in enumerate(filenames):
-                # extract bounding box for current image
-                (x1, y1, x2, y2) = bounding_boxes_batch[i].tolist()
-                height, width = original_sizes[i].tolist()
-                shape_original = (height, width)
-                
-                # resize bounding box to the original image's size
-                (x1, y1, x2, y2) = transform.scale_bounding_box(
-                    x1 = x1,
-                    y1 = y1, 
-                    x2 = x2,
-                    y2 = y2,
-                    shape_old = XRVDataset.set_shape,
-                    shape_new = shape_original
-                )
-                
-                # make the bounding box square and fit to within the original image
-                (x1, y1, x2, y2) = transform.make_bounding_box_square(
-                    x1 = x1,
-                    y1 = y1, 
-                    x2 = x2,
-                    y2 = y2,
-                    shape = shape_original,
-                    allowance = 0.05
-                )
-                
-                # crop original image
-                original_image_path = images_path / filename
-                original_image = skimage.io.imread(original_image_path)
-                original_image_cropped = original_image[x1:x2, y1:y2]
-                
-                # save image
+            # iterate through each file and pass to ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=batch_size) as executor:
+                futures = []
+                for i, filename in enumerate(filenames):
+                    # extract bounding box and lungs for current image
+                    (x1, y1, x2, y2) = bounding_boxes_batch[i].tolist()
+                    height, width = original_sizes[i].tolist()
+                    shape_original = (height, width)
+                    lungs = lungs_batch[i]
+
+                    kwargs = {
+                        'images_path': images_path,
+                        'save_path_images': save_path_images,
+                        'save_path_masks': save_path_masks,
+                        'save_path_logs': save_path_logs,
+                        'x1': x1,
+                        'y1': y1,
+                        'x2': x2,
+                        'y2': y2,
+                        'filename': filename,
+                        'shape_current': XRVDataset.set_shape,
+                        'shape_original': shape_original,
+                        'lungs': lungs
+                    }
+                    futures.append(
+                        executor.submit(save_crop_and_mask, **kwargs)
+                    )
+
                 try:
-                    skimage.io.imsave(save_path_images / filename, original_image_cropped)
-                except IndexError:
-                    pass
+                    wait(futures, return_when=ALL_COMPLETED)
+                except Exception as e:
+                    print(f"An error occurred within the ThreadPoolExecutor: {e}")
 
-                # save log
-                with open(save_path_logs / f"{filename.split('.')[0]}.txt", 'w') as f:
-                    f.write(str({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}))
-
-                # save lungs mask after resizing them
-                lungs = lungs_batch[i].cpu().numpy()
-                lungs = transform.resize(lungs, shape_original).astype(bool)
-                skimage.io.imsave(save_path_masks / filename, lungs)
+    th.cuda.empty_cache()
 
 if __name__ == "__main__":
     # set up argument parsing
