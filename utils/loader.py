@@ -52,3 +52,4 @@ class XRVDataset(Dataset):
         
         except OSError as e:
             print(f"OSError in loading {image_path} : {e}")
+            return None, None, None
