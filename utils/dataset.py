@@ -37,7 +37,7 @@ PROJECTIONS_KEPT = [
     "PA"
 ]
 
-# mapping between PadChest and Shenzhen dataset abnormalities
+# mapping between Shenzhen and PadChest dataset abnormalities
 ABNORMALITY_MAPPING = [
     ("pleural effusion", "pleural effusion"),
     ("pleural effusion", "loculated pleural effusion"),

@@ -188,3 +188,36 @@ def make_bounding_box_square(x1: int, y1: int, x2: int, y2: int, shape: tuple[in
         return w1, z1, w2, z2
     else:
         return z1, w1, z2, w2
+    
+def fnv1a_32(string: str) -> int:
+    """FNV-1a 32-bit hashing function."""
+    # 32-bit FNV offset basis and prime
+    FNV_prime = 0x01000193
+    FNV_offset_basis = 0x811C9DC5
+
+    # Convert the string into bytes (UTF-8 encoding)
+    hash_value = FNV_offset_basis
+    for byte in string.encode('utf-8'):
+        hash_value ^= byte
+        hash_value *= FNV_prime
+        hash_value &= 0xFFFFFFFF  # Ensure it's a 32-bit number
+    
+    return hash_value
+
+def get_max_value(arr: np.ndarray) -> int:
+    return np.iinfo(arr.dtype).max
+
+def encode_multiclass_one_hot(possible_labels: list[str], labels: list[str]) -> np.ndarray:
+    labels = labels.copy()
+    vec = np.zeros(len(possible_labels), dtype=np.float32)
+
+    for i, label in enumerate(possible_labels):
+        try:
+            idx = labels.index(label)
+            vec[i] = 1.
+            del labels[idx]
+        
+        except:
+            continue
+
+    return vec
