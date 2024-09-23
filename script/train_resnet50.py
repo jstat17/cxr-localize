@@ -50,6 +50,7 @@ os.makedirs(save_dir, exist_ok=True)
 num_epochs = 50
 
 # Data loaders
+print("Loading datasets")
 df = dataset.get_padchest_dataframe(padchest_path)
 train_dataset = MulticlassDatasetInMemory(
     df = df,

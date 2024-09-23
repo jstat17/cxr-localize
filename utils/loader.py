@@ -178,10 +178,12 @@ class MulticlassDataset(Dataset):
 
         # do second normalization
         if self.second_norm_dict is not None:
-            mean = self.second_norm_dict['mean'].astype(np.float32)
+            mean = self.second_norm_dict['mean']
+            mean = np.array(mean, dtype=np.float32)
             mean = mean[:, np.newaxis, np.newaxis] # (3, 1, 1)
 
-            std = self.second_norm_dict['std'].astype(np.float32)
+            std = self.second_norm_dict['std']
+            std = np.array(std, dtype=np.float32)
             std = std[:, np.newaxis, np.newaxis] # (3, 1, 1)
 
             image = np.subtract(
