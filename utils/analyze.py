@@ -10,7 +10,7 @@ def get_crop_intersection(padchest_path: Path, crop_path: Path) -> dict[str, flo
 
     Args:
         padchest_path (Path): Path to originally-downloaded PadChest dataset
-        crop_path (Path): Path to the cropped images (parent directory that includes logs, images and masks)
+        crop_path (Path): Path to the cropped images root (parent directory that includes logs, images and masks)
 
     Returns:
         dict[str, float]: Dictionary from filename (without extension) to percentage of intersection
@@ -41,7 +41,7 @@ def plot_bbox_image_intersection(padchest_path: Path, crop_path: Path) -> None:
 
     Args:
         padchest_path (Path): Path to originally-downloaded PadChest dataset
-        crop_path (Path): Path to the cropped images (parent directory that includes logs, images and masks)
+        crop_path (Path): Path to the cropped images root (parent directory that includes logs, images and masks)
     """
     filename_to_crop_pcts = get_crop_intersection(padchest_path, crop_path)
 
@@ -55,7 +55,7 @@ def get_cropped_below_intersection_pct(padchest_path: Path, crop_path: Path, int
 
     Args:
         padchest_path (Path): Path to originally-downloaded PadChest dataset
-        crop_path (Path): Path to the cropped images (parent directory that includes logs, images and masks)
+        crop_path (Path): Path to the cropped images root (parent directory that includes logs, images and masks)
         intersection (float): Intersection percent limit below which to include
 
     Returns:

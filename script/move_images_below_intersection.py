@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # set up argument parsing
     parser = ArgumentParser(description='Move cropped images that fall below the set intersection percenage')
     parser.add_argument('padchest_path', type=str, help='Path to originally-downloaded PadChest dataset')
-    parser.add_argument('crop_path', type=str, help="Desired extract path for all files")
+    parser.add_argument('crop_path', type=str, help="Path to the cropped images (parent directory that includes logs, images and masks)")
     parser.add_argument('intersection', type=float, help="Intersection percent limit below which to include")
 
     # parse command line arguments
