@@ -22,7 +22,7 @@ def main(crop_path: Path, size: int) -> None:
     all_files = os.listdir(images_path)
     pbar = tqdm(
         total = len(all_files),
-        desc = "Moving files..."
+        desc = "Resizing and saving files..."
     )
     new_shape = (size, size)
     for file in all_files:

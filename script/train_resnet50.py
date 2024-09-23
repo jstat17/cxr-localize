@@ -10,7 +10,7 @@ from pathlib import Path
 import json
 
 from utils.dataset import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
-from utils.loader import MulticlassDataset
+from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils import dataset
 
 # Device configuration
@@ -34,12 +34,12 @@ model = model.to(device)
 
 # Loss function and optimizer
 criterion = nn.BCEWithLogitsLoss()  # For multi-label classification
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 # Directories and checkpointing
 home = Path.home()
 padchest_path = home / "Datasets" / "PadChest"
-images_path = home / "Datasets" / "PadChest-extract-common-with-Shenzhen-only-abnormality-crop" / "images"
+images_path = home / "Datasets" / "PadChest-extract-common-with-Shenzhen-only-abnormality-crop" / "images-224"
 
 save_dir = home / "ResNet50"
 checkpoint_path = save_dir / "model_checkpoint.pth"
@@ -51,10 +51,10 @@ num_epochs = 50
 
 # Data loaders
 df = dataset.get_padchest_dataframe(padchest_path)
-train_dataset = MulticlassDataset(
+train_dataset = MulticlassDatasetInMemory(
     df = df,
     images_path = images_path,
-    img_shape = (224, 224),
+    img_shape = 224,
     split = "train",
     hash_percentile = 0.9,
     possible_labels = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
@@ -62,14 +62,14 @@ train_dataset = MulticlassDataset(
 train_dataloader = DataLoader(
     dataset = train_dataset,
     batch_size = 32,
-    num_workers = 4,
+    num_workers = 8,
     shuffle = True
 )
 
-test_dataset = MulticlassDataset(
+test_dataset = MulticlassDatasetInMemory(
     df = df,
     images_path = images_path,
-    img_shape = (224, 224),
+    img_shape = 224,
     split = "test",
     hash_percentile = 0.9,
     possible_labels = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
@@ -77,7 +77,7 @@ test_dataset = MulticlassDataset(
 test_dataloader = DataLoader(
     dataset = test_dataset,
     batch_size = 32,
-    num_workers = 4,
+    num_workers = 8,
     shuffle = True
 )
 
@@ -112,7 +112,7 @@ def evaluate(model, test_loader, device):
     model.eval()
     all_preds = []
     all_labels = []
-    subset_size = 100  # Limit to a small subset for faster evaluation
+    subset_size = 250  # Limit to a small subset for faster evaluation
     progress_bar = tqdm(test_loader, desc="Evaluating", unit="batch", total=subset_size // test_loader.batch_size)
 
     with torch.no_grad():
@@ -158,6 +158,7 @@ def train_and_evaluate(model, train_loader, test_loader, optimizer, criterion, d
         'precision': [],
         'recall': [],
         'f1': [],
+        'train_loss': []
     }
     for epoch in range(num_epochs):
         # Train the model for one epoch
@@ -177,6 +178,7 @@ def train_and_evaluate(model, train_loader, test_loader, optimizer, criterion, d
         performance_dict['precision'].append(precision)
         performance_dict['recall'].append(recall)
         performance_dict['f1'].append(f1)
+        performance_dict['train_loss'].append(train_loss)
         save_performance_log(performance_dict, log_path)
         
 
