@@ -46,7 +46,7 @@ def main(crop_path: Path, size: int) -> None:
 if __name__ == "__main__":
     # set up argument parsing
     parser = ArgumentParser(description='Resize cropped images')
-    parser.add_argument('crop_path', type=str, help="Path to the cropped images (parent directory that includes logs, images and masks)")
+    parser.add_argument('crop_path', type=str, help="Path to the cropped images root (parent directory that includes logs, images and masks)")
     parser.add_argument('size', type=float, help="Image will be resized to (size, size) shape")
 
     # parse command line arguments
