@@ -11,7 +11,7 @@ from utils import analyze
         python -m script.move_images_below_intersection /path/to/PadChest /path/to/crop/root intersection_val
 """
 
-def main(padchest_path: Path, extract_path: Path) -> None:
+def main(padchest_path: Path, crop_path: Path, intersection: float) -> None:
     # get filenames to move
     filename_to_crop_pct = analyze.get_cropped_below_intersection_pct(
         padchest_path = padchest_path,
