@@ -8,7 +8,7 @@ from utils import analyze
 
 """Move crops to `images-unused` folder if they fall below a set intersection percentage.
    Run from cxr-localize:
-        python -m script.move_image_below_intersection /path/to/PadChest /path/to/crop/root
+        python -m script.move_images_below_intersection /path/to/PadChest /path/to/crop/root intersection_val
 """
 
 def main(padchest_path: Path, extract_path: Path) -> None:
