@@ -52,6 +52,6 @@ if __name__ == "__main__":
     # parse command line arguments
     args = parser.parse_args()
     crop_path = Path(args.crop_path)
-    size = args.intersection
+    size = args.size
 
     main(crop_path, size)
