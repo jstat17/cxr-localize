@@ -137,7 +137,7 @@ def save_performance_log(performance_dict: dict[str, list[Any]], log_path: Path)
 
 def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader, evaluation_split: str, optimizer: optim.Optimizer, criterion: nn.Module, device: str, num_epochs: int, checkpoint_path: Path, log_path: Path) -> None:
     performance_curves = defaultdict(list)
-
+    prev_epoch_eval_loss = None
     for epoch in range(num_epochs):
         # train the model for one epoch
         train_loss = train_one_epoch(epoch, model, train_loader, optimizer, criterion, device)
@@ -153,9 +153,15 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
         )
         evaluate.print_metrics(metrics)
 
-        # save the model checkpoint
-        save_checkpoint(epoch, model, optimizer, checkpoint_path)
-        print(f"Checkpoint saved at {checkpoint_path}")
+        # save the model checkpoint if evaluation loss is lower than in the previous epoch
+        curr_epoch_eval_loss = metrics[f"{evaluation_split}_loss"]
+        if (
+            prev_epoch_eval_loss is None
+                or
+            curr_epoch_eval_loss < prev_epoch_eval_loss
+        ):
+            save_checkpoint(epoch, model, optimizer, checkpoint_path)
+            print(f"Checkpoint saved at {checkpoint_path}")
 
         # save performance logs
         performance_curves['epoch'].append(epoch)
@@ -163,6 +169,9 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
             performance_curves[metric].append(value)
         
         save_performance_log(performance_curves, log_path)
+
+        # update previous evaluation loss
+        prev_epoch_eval_loss = curr_epoch_eval_loss
         
 
 # Now train and evaluate
