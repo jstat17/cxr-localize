@@ -67,7 +67,7 @@ class XRVDataset(Dataset):
 
 class MulticlassDataset(Dataset):
 
-    def __init__(self, df: pd.DataFrame, images_path: str, img_shape: int | tuple[int, int], split: str, hash_percentile: float, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
+    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, hash_percentile: float, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
         self.df = df.copy(deep=False)
         self.images_path = images_path
 

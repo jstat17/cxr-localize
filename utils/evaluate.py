@@ -52,7 +52,7 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics['auc_pr'] = get_metric_macro(all_labels, all_preds, average_precision_score)
     
     metrics['cohen_kappa'] = get_metric_macro(all_labels, all_preds, cohen_kappa_score)
-    metrics['mcc'] = matthews_corrcoef(all_labels, all_preds)
+    metrics['mcc'] = get_metric_macro(all_labels, all_preds, matthews_corrcoef)
     metrics['exact_match_ratio'] = (all_preds == all_labels).all(axis=1).mean()
     
     metrics['jaccard_similarity'] = get_metric_macro(all_labels, all_preds, jaccard_score, average='binary')
