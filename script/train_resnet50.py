@@ -171,7 +171,10 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
         save_performance_log(performance_curves, log_path)
 
         # update previous evaluation loss
-        prev_epoch_eval_loss = curr_epoch_eval_loss
+        if prev_epoch_eval_loss is None:
+            prev_epoch_eval_loss = curr_epoch_eval_loss
+        else:
+            prev_epoch_eval_loss = min(curr_epoch_eval_loss, prev_epoch_eval_loss)
         
 
 # Now train and evaluate

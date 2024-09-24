@@ -67,7 +67,7 @@ class XRVDataset(Dataset):
 
 class MulticlassDataset(Dataset):
 
-    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, hash_percentile: float, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
+    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, split_pct1: float, split_pct2, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
         self.df = df.copy(deep=False)
         self.images_path = images_path
 
@@ -79,9 +79,11 @@ class MulticlassDataset(Dataset):
         self.split = split.casefold()
         self.possible_labels = possible_labels
 
-        self.hash_percentile = hash_percentile
+        self.split_pct1 = split_pct1
+        self.split_pct2 = split_pct2
         self.possible_hashes = 2**32
-        self.hash_value_split = int(self.possible_hashes * self.hash_percentile)
+        self.hash_split1 = int(self.possible_hashes * self.split_pct1)
+        self.hash_split2 = int(self.possible_hashes * self.split_pct2)
 
         self.filenames = self._get_filenames()
         self.labels = th.from_numpy(
@@ -122,9 +124,11 @@ class MulticlassDataset(Dataset):
             filename = all_filenames[i]
             hash = self._hash_filename(filename)
             if (
-                (hash <= self.hash_value_split and self.split == "train")
-                or
-                (hash > self.hash_value_split and self.split == "test")
+                (hash <= self.hash_split1 and self.split == "train")
+                    or
+                (self.hash_split1 < hash <= self.hash_split2 and self.split == "validate" )
+                    or
+                (self.hash_split2 < hash and self.split == "test")
             ):
                 selected_filenames.append(filename)
 
@@ -248,8 +252,8 @@ class MulticlassDataset(Dataset):
 
 class MulticlassDatasetInMemory(MulticlassDataset):
 
-    def __init__(self, df: pd.DataFrame, images_path: str, img_shape: int | tuple[int, int], split: str, hash_percentile: float, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
-        super().__init__(df, images_path, img_shape, split, hash_percentile, possible_labels, second_norm_dict)
+    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, split_pct1: float, split_pct2, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
+        super().__init__(df, images_path, img_shape, split, split_pct1, split_pct2, possible_labels, second_norm_dict)
         
         self.images = th.from_numpy(
             self._load_normalize_all_images()
