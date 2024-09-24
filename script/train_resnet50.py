@@ -15,6 +15,9 @@ from utils.dataset import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils import dataset, evaluate
 
+# setting parallel config
+parallel = True
+
 # Device configuration
 device = "cuda"
 
@@ -31,7 +34,11 @@ model.fc = nn.Sequential(
 )
 
 # Use DataParallel for multi-GPU support
-model = nn.DataParallel(model)
+if not parallel:
+    device += ":0"
+else:
+    model = nn.DataParallel(model)
+
 model = model.to(device)
 
 # Loss function and optimizer
@@ -54,6 +61,7 @@ os.makedirs(save_dir, exist_ok=True)
 # Number of epochs and loaders
 num_epochs = 100
 batch_size = 64
+num_workers = 8
 
 # Data loaders
 print("Loading datasets")
@@ -69,7 +77,7 @@ train_dataset = MulticlassDatasetInMemory(
 train_loader = DataLoader(
     dataset = train_dataset,
     batch_size = batch_size,
-    num_workers = batch_size,
+    num_workers = num_workers,
     shuffle = True
 )
 
@@ -84,7 +92,7 @@ test_dataset = MulticlassDatasetInMemory(
 test_loader = DataLoader(
     dataset = test_dataset,
     batch_size = 32,
-    num_workers = 8,
+    num_workers = num_workers,
     shuffle = True
 )
 
