@@ -1,4 +1,4 @@
-import torch
+import torch as th
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -121,13 +121,13 @@ def save_checkpoint(epoch, model, optimizer, checkpoint_path):
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict()
     }
-    torch.save(state, checkpoint_path)
+    th.save(state, checkpoint_path)
 
 def save_performance_log(performance_dict: dict[str, list[Any]], log_path: Path) -> None:
     with open(log_path, 'w') as f:
         json.dump(performance_dict, f)
 
-def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader, evaluation_split: str, optimizer: optim.optimizer, criterion: nn.Module, device: str, num_epochs: int, checkpoint_path: Path, log_path: Path) -> None:
+def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader, evaluation_split: str, optimizer: optim.Optimizer, criterion: nn.Module, device: str, num_epochs: int, checkpoint_path: Path, log_path: Path) -> None:
     performance_curves = defaultdict(list)
 
     for epoch in range(num_epochs):
