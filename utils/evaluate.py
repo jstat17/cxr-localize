@@ -4,6 +4,8 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, f1_score,\
                             roc_auc_score, average_precision_score, cohen_kappa_score, matthews_corrcoef
 from tqdm import tqdm
+import numpy as np
+from collections.abc import Callable
 
 def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str, criterion: nn.Module) -> dict[str, float]:
     all_preds = []
@@ -44,8 +46,8 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics['micro_f1'] = f1_score(all_labels, all_preds, average='micro')
     metrics['macro_f1 ']= f1_score(all_labels, all_preds, average='macro')
     
-    metrics['auc_roc'] = roc_auc_score(all_labels, all_preds, average='macro')
-    metrics['auc_pr'] = average_precision_score(all_labels, all_preds, average='macro')
+    metrics['auc_roc'] = get_metric_macro(all_labels, all_preds, roc_auc_score)
+    metrics['auc_pr'] = get_metric_macro(all_labels, all_preds, average_precision_score)
     
     metrics['cohen_kappa'] = cohen_kappa_score(all_labels, all_preds)
     metrics['mcc'] = matthews_corrcoef(all_labels, all_preds)
@@ -66,3 +68,13 @@ def print_metrics(metrics: dict[str: float], cols: int = 3) -> None:
         for key, value in zip(row_keys, row_values):
             row.append(f"{key:<20} {value:.4f}")
         print(" | ".join(row))
+
+def get_metric_macro(y_true, y_pred, metric: Callable) -> float:
+    # solves problem where there could be only one class in the true labels
+    aucs = []
+    for i in range(y_true.shape[1]):
+        if len(set(y_true[:, i])) > 1:  # check if there is more than one class
+            auc = metric(y_true[:, i], y_pred[:, i])
+            aucs.append(auc)
+
+    return np.mean(aucs)

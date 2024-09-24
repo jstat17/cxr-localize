@@ -114,7 +114,8 @@ class MulticlassDataset(Dataset):
         # use tqdm progress bar
         pbar = tqdm(
             total = n,
-            desc = f"Selecting {self.split} filenames based on hash value..."
+            desc = f"Selecting {self.split} filenames based on hash value",
+            unit = "file"
         )
 
         for i in range(n):
@@ -149,7 +150,8 @@ class MulticlassDataset(Dataset):
         # use tqdm progress bar
         pbar = tqdm(
             total = n,
-            desc = f"Loading {self.split} image labels into memory..."
+            desc = f"Loading {self.split} image labels into memory",
+            unit = "label"
         )
 
         for idx in range(n):
@@ -268,7 +270,8 @@ class MulticlassDatasetInMemory(MulticlassDataset):
         # use tqdm progress bar
         pbar = tqdm(
             total = n,
-            desc = f"Loading {self.split} images into memory and normalizing..."
+            desc = f"Loading {self.split} images into memory and normalizing",
+            unit = "image"
         )
 
         for idx in range(n):
