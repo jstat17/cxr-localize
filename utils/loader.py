@@ -9,6 +9,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import datasets, transforms
 from torchvision.models import ResNet50_Weights
 import pandas as pd
+from tqdm import tqdm
 
 from utils import transform
 
@@ -107,8 +108,17 @@ class MulticlassDataset(Dataset):
             list[str]: List of string filenames
         """
         all_filenames = os.listdir(self.images_path)
+        n = len(all_filenames)
         selected_filenames = []
-        for filename in all_filenames:
+
+        # use tqdm progress bar
+        pbar = tqdm(
+            total = n,
+            desc = f"Selecting {self.split} filenames based on hash value..."
+        )
+
+        for i in range(n):
+            filename = all_filenames[i]
             hash = self._hash_filename(filename)
             if (
                 (hash <= self.hash_value_split and self.split == "train")
@@ -116,6 +126,11 @@ class MulticlassDataset(Dataset):
                 (hash > self.hash_value_split and self.split == "test")
             ):
                 selected_filenames.append(filename)
+
+            pbar.update(1)
+
+        # finish tqdm
+        pbar.close()
 
         return selected_filenames
     
@@ -129,6 +144,12 @@ class MulticlassDataset(Dataset):
         labels = np.zeros(
             shape = (len(self), len(self.possible_labels)),
             dtype = np.float32
+        )
+
+        # use tqdm progress bar
+        pbar = tqdm(
+            total = n,
+            desc = f"Loading {self.split} image labels into memory..."
         )
 
         for idx in range(n):
@@ -146,6 +167,11 @@ class MulticlassDataset(Dataset):
                 labels = image_labels
             )
             labels[idx] = vec
+
+            pbar.update(1)
+
+        # finish tqdm
+        pbar.close()
 
         return labels
     
@@ -238,11 +264,21 @@ class MulticlassDatasetInMemory(MulticlassDataset):
             dtype = np.float32
         )
 
+        # use tqdm progress bar
+        pbar = tqdm(
+            total = n,
+            desc = f"Loading {self.split} images into memory and normalizing..."
+        )
+
         for idx in range(n):
             image_path = self.images_path / self.filenames[idx]
             image = self._load_normalize_image(image_path)
 
             images[idx] = image
+            pbar.update(1)
+
+        # finish tqdm
+        pbar.close()
 
         return images
     
