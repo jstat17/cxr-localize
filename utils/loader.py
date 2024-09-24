@@ -175,7 +175,7 @@ class MulticlassDataset(Dataset):
 
         return labels
     
-    def _load_normalize_image(self, image_path: Path) -> np.ndarray:
+    def _load_normalize_image(self, image_path: Path, resize: bool = False) -> np.ndarray:
         """Load image from image_path and normalize it
 
         Args:
@@ -191,6 +191,10 @@ class MulticlassDataset(Dataset):
         max_dtype_value = transform.get_max_value(image)
         image = image.astype(np.float32)
         image = image / max_dtype_value
+
+        # resize
+        if resize and image.shape != self.img_shape:
+            image = transform.resize(image, self.img_shape)
 
         # copy to 3 channel dimensions
         image_3_channel = np.zeros(
@@ -227,12 +231,9 @@ class MulticlassDataset(Dataset):
         return len(self.filenames)
     
     def __getitem__(self, idx: int) -> tuple[th.Tensor, th.Tensor]:
-        # load image from disk
+        # load image from disk, normalize, resize
         image_path = self.images_path / self.filenames[idx]
-        image = self._load_normalize_image(image_path)
-
-        # resize
-        image = transform.resize(image, self.img_shape)
+        image = self._load_normalize_image(image_path, resize=True)
 
         # convert to PyTorch tensor
         image = th.from_numpy(image)

@@ -8,10 +8,12 @@ from tqdm import tqdm
 import os
 from pathlib import Path
 import json
+from collections import defaultdict
+from typing import Any
 
 from utils.dataset import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
-from utils import dataset
+from utils import dataset, evaluate
 
 # Device configuration
 device = "cuda"
@@ -33,8 +35,11 @@ model = nn.DataParallel(model)
 model = model.to(device)
 
 # Loss function and optimizer
-criterion = nn.BCEWithLogitsLoss()  # For multi-label classification
-optimizer = optim.Adam(model.parameters(), lr=1e-3)
+criterion = nn.BCELoss()  # For multi-label classification
+optimizer = optim.AdamW(
+    params = model.parameters(),
+    lr = 1e-3
+)
 
 # Directories and checkpointing
 home = Path.home()
@@ -47,7 +52,8 @@ log_path = save_dir / "log.json"
 os.makedirs(save_dir, exist_ok=True)
 
 # Number of epochs and loaders
-num_epochs = 50
+num_epochs = 100
+batch_size = 64
 
 # Data loaders
 print("Loading datasets")
@@ -60,10 +66,10 @@ train_dataset = MulticlassDatasetInMemory(
     hash_percentile = 0.9,
     possible_labels = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 )
-train_dataloader = DataLoader(
+train_loader = DataLoader(
     dataset = train_dataset,
-    batch_size = 32,
-    num_workers = 8,
+    batch_size = batch_size,
+    num_workers = batch_size,
     shuffle = True
 )
 
@@ -75,7 +81,7 @@ test_dataset = MulticlassDatasetInMemory(
     hash_percentile = 0.9,
     possible_labels = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 )
-test_dataloader = DataLoader(
+test_loader = DataLoader(
     dataset = test_dataset,
     batch_size = 32,
     num_workers = 8,
@@ -109,38 +115,6 @@ def train_one_epoch(epoch, model, train_loader, optimizer, criterion, device):
 
     return running_loss / len(train_loader)
 
-def evaluate(model, test_loader, device):
-    model.eval()
-    all_preds = []
-    all_labels = []
-    subset_size = 250  # Limit to a small subset for faster evaluation
-    progress_bar = tqdm(test_loader, desc="Evaluating", unit="batch", total=subset_size // test_loader.batch_size)
-
-    with torch.no_grad():
-        for i, (images, labels) in enumerate(progress_bar):
-            if i * test_loader.batch_size >= subset_size:
-                break
-            images, labels = images.to(device), labels.to(device)
-            
-            # Forward pass
-            outputs = model(images)
-            preds = (outputs > 0.5).float()
-
-            all_preds.append(preds.cpu())
-            all_labels.append(labels.cpu())
-
-    # Stack batches to calculate metrics
-    all_preds = torch.cat(all_preds).numpy()
-    all_labels = torch.cat(all_labels).numpy()
-
-    # Compute metrics
-    accuracy = accuracy_score(all_labels, all_preds)
-    precision = precision_score(all_labels, all_preds, average='samples')
-    recall = recall_score(all_labels, all_preds, average='samples')
-    f1 = f1_score(all_labels, all_preds, average='samples')
-
-    return accuracy, precision, recall, f1
-
 def save_checkpoint(epoch, model, optimizer, checkpoint_path):
     state = {
         'epoch': epoch,
@@ -149,39 +123,50 @@ def save_checkpoint(epoch, model, optimizer, checkpoint_path):
     }
     torch.save(state, checkpoint_path)
 
-def save_performance_log(performance_dict, log_path):
+def save_performance_log(performance_dict: dict[str, list[Any]], log_path: Path) -> None:
     with open(log_path, 'w') as f:
         json.dump(performance_dict, f)
 
-def train_and_evaluate(model, train_loader, test_loader, optimizer, criterion, device, num_epochs, checkpoint_path, log_path):
-    performance_dict = {
-        'accuracy': [],
-        'precision': [],
-        'recall': [],
-        'f1': [],
-        'train_loss': []
-    }
-    for epoch in range(num_epochs):
-        # Train the model for one epoch
-        train_loss = train_one_epoch(epoch, model, train_loader, optimizer, criterion, device)
-        print(f"Epoch [{epoch + 1}/{num_epochs}], Loss: {train_loss:.4f}")
-        
-        # Evaluate the model on the test set
-        accuracy, precision, recall, f1 = evaluate(model, test_loader, device)
-        print(f"Test Metrics - Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1-Score: {f1:.4f}")
+def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader, evaluation_split: str, optimizer: optim.optimizer, criterion: nn.Module, device: str, num_epochs: int, checkpoint_path: Path, log_path: Path) -> None:
+    performance_curves = defaultdict(list)
 
-        # Save the model checkpoint
+    for epoch in range(num_epochs):
+        # train the model for one epoch
+        train_loss = train_one_epoch(epoch, model, train_loader, optimizer, criterion, device)
+        print(f"Train Loss: {train_loss:.4f}")
+        
+        # evaluate the model on the evaluation_loader
+        metrics = evaluate.evaluate_model(
+            model = model,
+            loader = evaluation_loader,
+            split = evaluation_split,
+            device = device,
+            criterion = criterion
+        )
+        evaluate.print_metrics(metrics)
+
+        # save the model checkpoint
         save_checkpoint(epoch, model, optimizer, checkpoint_path)
         print(f"Checkpoint saved at {checkpoint_path}")
 
-        # Save performance logs
-        performance_dict['accuracy'].append(accuracy)
-        performance_dict['precision'].append(precision)
-        performance_dict['recall'].append(recall)
-        performance_dict['f1'].append(f1)
-        performance_dict['train_loss'].append(train_loss)
-        save_performance_log(performance_dict, log_path)
+        # save performance logs
+        performance_curves['epoch'].append(epoch)
+        for metric, value in metrics.items():
+            performance_curves[metric].append(value)
+        
+        save_performance_log(performance_curves, log_path)
         
 
 # Now train and evaluate
-train_and_evaluate(model, train_dataloader, test_dataloader, optimizer, criterion, device, num_epochs, checkpoint_path, log_path)
+train_and_evaluate(
+    model = model,
+    train_loader = train_loader,
+    evaluation_loader = test_loader,
+    evaluation_split = "test",
+    optimizer = optimizer,
+    criterion = criterion,
+    device = device,
+    num_epochs = num_epochs,
+    checkpoint_path = checkpoint_path,
+    log_path = log_path
+)
