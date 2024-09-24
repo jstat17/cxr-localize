@@ -71,7 +71,8 @@ train_dataset = MulticlassDatasetInMemory(
     images_path = images_path,
     img_shape = 224,
     split = "train",
-    hash_percentile = 0.9,
+    split_pct1 = 0.8,
+    split_pct2 = 0.9,
     possible_labels = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 )
 train_loader = DataLoader(
@@ -85,8 +86,9 @@ test_dataset = MulticlassDatasetInMemory(
     df = df,
     images_path = images_path,
     img_shape = 224,
-    split = "test",
-    hash_percentile = 0.9,
+    split = "validate",
+    split_pct1 = 0.8,
+    split_pct2 = 0.9,
     possible_labels = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 )
 test_loader = DataLoader(
