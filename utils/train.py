@@ -62,7 +62,15 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
     prev_epoch_eval_loss = None
     for epoch in range(num_epochs):
         # train the model for one epoch
-        train_loss = train_one_epoch(epoch, model, train_loader, optimizer, criterion, device)
+        train_loss = train_one_epoch(
+            epoch = epoch,
+            num_epochs = num_epochs,
+            model = model,
+            train_loader = train_loader,
+            optimizer = optimizer,
+            criterion = criterion,
+            device = device
+        )
         print(f"Train Loss: {train_loss:.4f}")
         
         # evaluate the model on the evaluation_loader
