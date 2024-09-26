@@ -217,7 +217,7 @@ def encode_multiclass_one_hot(possible_labels: list[str], labels: list[str]) -> 
             vec[i] = 1.
             del labels[idx]
         
-        except:
+        except ValueError:
             continue
 
     return vec

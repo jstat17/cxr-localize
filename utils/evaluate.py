@@ -42,7 +42,8 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics = dict()
 
     # accuracy
-    metrics['accuracy'] = get_metric_macro(all_labels, all_preds, accuracy_score)
+    metrics['accuracy_subset'] = accuracy_score(all_labels, all_preds) # all labels predicted correctly for an image
+    metrics['accuracy_label'] = get_metric_macro(all_labels, all_preds, accuracy_score) # number of labels predicted correctly
 
     # sensitivity
     metrics['sensitivity_macro'] = recall_score(all_labels, all_preds, average='macro')
