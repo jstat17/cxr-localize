@@ -193,6 +193,6 @@ train_and_evaluate(
     criterion = criterion,
     device = device,
     num_epochs = num_epochs,
-    checkpoint_path = checkpoint_path,
+    save_dir = save_dir,
     log_path = log_path
 )
