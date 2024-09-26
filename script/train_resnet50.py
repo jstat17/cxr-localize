@@ -14,6 +14,8 @@ from typing import Any
 from utils.dataset import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils import dataset, evaluate
+from vision.ResNet import get_resnet50
+from vision.ConvNeXt import get_convnext_base
 
 # setting parallel config
 parallel = True
@@ -24,13 +26,10 @@ device = "cuda"
 # Number of classes (adjust this based on your dataset)
 num_classes = len(PADCHEST_ABNORMALITIES_COMMON_SHENZHEN)
 
-# Load the pre-trained ResNet-50 model with V2 weights
-model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V2)
-
-# Modify the last layer to output num_classes and add sigmoid for multi-label classification
-model.fc = nn.Sequential(
-    nn.Linear(model.fc.in_features, num_classes),
-    nn.Sigmoid()
+# Load the pre-trained ResNet-50 model with ImageNet 1K V2 weights
+model = get_resnet50(
+    num_classes = num_classes,
+    weights = "imagenet"
 )
 
 # Use DataParallel for multi-GPU support
@@ -59,7 +58,7 @@ log_path = save_dir / "log.json"
 os.makedirs(save_dir, exist_ok=True)
 
 # Number of epochs and loaders
-num_epochs = 100
+num_epochs = 20
 batch_size = 64
 num_workers = 8
 
