@@ -9,8 +9,7 @@ from utils.dataset import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils import dataset
 from utils.train import train_and_evaluate
-from vision.ResNet import get_resnet50
-from vision.ConvNeXt import get_convnext_base
+from vision.EfficientNet import get_efficientnet_b0
 
 # setting parallel config
 parallel = True
@@ -22,7 +21,7 @@ device = "cuda"
 num_classes = len(PADCHEST_ABNORMALITIES_COMMON_SHENZHEN)
 
 # Load the pre-trained ResNet-50 model with ImageNet 1K V2 weights
-model = get_resnet50(
+model = get_efficientnet_b0(
     num_classes = num_classes,
     weights = "imagenet"
 )
@@ -47,7 +46,7 @@ home = Path.home()
 padchest_path = home / "Datasets" / "PadChest"
 images_path = home / "Datasets" / "PadChest-extract-common-with-Shenzhen-only-abnormality-crop" / "images-224"
 
-save_dir = home / "models" / "ResNet50"
+save_dir = home / "models" / "EfficientNet-B0"
 os.makedirs(save_dir, exist_ok=True)
 
 # Number of epochs and loaders
