@@ -42,8 +42,7 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics = dict()
 
     # accuracy
-    metrics['accuracy_macro'] = accuracy_score(all_labels, all_preds, average='macro')
-    metrics['accuracy_micro'] = accuracy_score(all_labels, all_preds, average='micro')
+    metrics['accuracy'] = accuracy_score(all_labels, all_preds)
 
     # sensitivity
     metrics['sensitivity_macro'] = recall_score(all_labels, all_preds, average='macro')
