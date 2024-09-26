@@ -131,7 +131,7 @@ class MulticlassDataset(Dataset):
         for i in range(n):
             filename = all_filenames[i]
             patient_ID = filename_to_patientID[filename]
-            hash = self._hash_filename(patient_ID)
+            hash = self._hash_string(patient_ID)
 
             if (
                 (hash <= self.hash_split1 and self.split == "train")
