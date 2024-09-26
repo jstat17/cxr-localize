@@ -97,6 +97,7 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
 
         # save performance logs
         performance_curves['epoch'].append(epoch)
+        performance_curves['train_loss'].append(train_loss)
         for metric, value in metrics.items():
             performance_curves[metric].append(value)
         

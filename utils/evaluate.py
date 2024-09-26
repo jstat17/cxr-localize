@@ -40,13 +40,26 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
 
     # compute metrics
     metrics = dict()
-    metrics['accuracy'] = accuracy_score(all_labels, all_preds)
-    metrics['sensitivity'] = recall_score(all_labels, all_preds, average='macro')
-    metrics['precision'] = precision_score(all_labels, all_preds, average='micro')
-    metrics['recall'] = recall_score(all_labels, all_preds, average='micro')
 
-    metrics['micro_f1'] = f1_score(all_labels, all_preds, average='micro')
-    metrics['macro_f1 ']= f1_score(all_labels, all_preds, average='macro')
+    # accuracy
+    metrics['accuracy_macro'] = accuracy_score(all_labels, all_preds, average='macro')
+    metrics['accuracy_micro'] = accuracy_score(all_labels, all_preds, average='micro')
+
+    # sensitivity
+    metrics['sensitivity_macro'] = recall_score(all_labels, all_preds, average='macro')
+    metrics['sensitivity_micro'] = recall_score(all_labels, all_preds, average='micro')
+
+    # precision
+    metrics['precision_macro'] = precision_score(all_labels, all_preds, average='macro')
+    metrics['precision_micro'] = precision_score(all_labels, all_preds, average='micro')
+
+    # recall
+    metrics['recall_macro'] = recall_score(all_labels, all_preds, average='macro')
+    metrics['recall_micro'] = recall_score(all_labels, all_preds, average='micro')
+
+    # F1
+    metrics['f1_macro']= f1_score(all_labels, all_preds, average='macro')
+    metrics['f1_micro'] = f1_score(all_labels, all_preds, average='micro')
     
     metrics['auc_roc'] = get_metric_macro(all_labels, all_preds, roc_auc_score)
     metrics['auc_pr'] = get_metric_macro(all_labels, all_preds, average_precision_score)
