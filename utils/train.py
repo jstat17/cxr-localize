@@ -49,7 +49,7 @@ def save_checkpoint(epoch: int, model: nn.Module, optimizer: optim.Optimizer, ch
 
 def save_performance_log(performance_dict: dict[str, list[Any]], log_path: Path) -> None:
     with open(log_path, 'w') as f:
-        json.dump(performance_dict, f)
+        json.dump(performance_dict, f, indent=2)
 
 def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader,\
                        evaluation_split: str, optimizer: optim.Optimizer, criterion: nn.Module,\

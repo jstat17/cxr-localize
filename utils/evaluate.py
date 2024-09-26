@@ -35,14 +35,14 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
             all_labels.append(labels.cpu())
 
     # stack batches into numpy arrays, shape (num_samples, num_classes)
-    all_preds = th.cat(all_preds).numpy()
-    all_labels = th.cat(all_labels).numpy()
+    all_preds = th.cat(all_preds).numpy().astype(int)
+    all_labels = th.cat(all_labels).numpy().astype(int)
 
     # compute metrics
     metrics = dict()
 
     # accuracy
-    metrics['accuracy'] = accuracy_score(all_labels, all_preds)
+    metrics['accuracy'] = get_metric_macro(all_labels, all_preds, accuracy_score)
 
     # sensitivity
     metrics['sensitivity_macro'] = recall_score(all_labels, all_preds, average='macro')
