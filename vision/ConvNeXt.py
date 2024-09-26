@@ -29,8 +29,9 @@ class ConvNeXt_Base(nn.Module):
             weights = weights
         )
         self.model.classifier = nn.Sequential(
-            nn.LayerNorm(self.model.classifier[1].in_features),
-            nn.Linear(self.model.classifier[1].in_features, num_classes),
+            self.model.classifier[0],  # Flatten layer
+            self.model.classifier[1],  # LayerNorm layer
+            nn.Linear(self.model.classifier[2].in_features, num_classes),
             nn.Sigmoid()
         )
 
