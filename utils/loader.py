@@ -161,6 +161,12 @@ class MulticlassDataset(Dataset):
             dtype = np.float32
         )
 
+        # mapping from filename to labels
+        filename_to_labels = get_iter_to_iter_dict(
+            iter1 = self.df['Filename'],
+            iter2 = self.df['Labels']
+        )
+
         # use tqdm progress bar
         pbar = tqdm(
             total = n,
@@ -170,13 +176,7 @@ class MulticlassDataset(Dataset):
 
         for idx in range(n):
             filename = self.filenames[idx]
-            image_labels = self.df[
-                self.df['Filename'] == filename
-            ]['Labels'].values
-
-            # if the labels are not an empty list
-            if image_labels:
-                image_labels = image_labels[0]
+            image_labels = filename_to_labels[filename]
 
             vec = transform.encode_multiclass_one_hot(
                 possible_labels = self.possible_labels,

@@ -208,16 +208,15 @@ def get_max_value(arr: np.ndarray) -> int:
     return np.iinfo(arr.dtype).max
 
 def encode_multiclass_one_hot(possible_labels: list[str], labels: list[str]) -> np.ndarray:
-    labels = labels.copy()
+    # create a set for faster lookup
+    possible_labels_set = set(labels)
+    
+    # initialize the multi-hot encoded vector
     vec = np.zeros(len(possible_labels), dtype=np.float32)
 
+    # iterate through possible labels and set the corresponding index in the vector
     for i, label in enumerate(possible_labels):
-        try:
-            idx = labels.index(label)
+        if label in possible_labels_set:
             vec[i] = 1.
-            del labels[idx]
-        
-        except ValueError:
-            continue
 
     return vec
