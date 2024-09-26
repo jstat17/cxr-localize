@@ -53,7 +53,7 @@ home = Path.home()
 padchest_path = home / "Datasets" / "PadChest"
 images_path = home / "Datasets" / "PadChest-extract-common-with-Shenzhen-only-abnormality-crop" / "images-224"
 
-save_dir = home / "ResNet50"
+save_dir = home / "models" / "ResNet50"
 checkpoint_path = save_dir / "model_checkpoint.pth"
 log_path = save_dir / "log.json"
 os.makedirs(save_dir, exist_ok=True)
@@ -64,7 +64,6 @@ batch_size = 64
 num_workers = 8
 
 # Data loaders
-print("Loading datasets")
 df = dataset.get_padchest_dataframe(padchest_path)
 train_dataset = MulticlassDatasetInMemory(
     df = df,
@@ -137,7 +136,10 @@ def save_performance_log(performance_dict: dict[str, list[Any]], log_path: Path)
     with open(log_path, 'w') as f:
         json.dump(performance_dict, f)
 
-def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader, evaluation_split: str, optimizer: optim.Optimizer, criterion: nn.Module, device: str, num_epochs: int, checkpoint_path: Path, log_path: Path) -> None:
+def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader, evaluation_split: str, optimizer: optim.Optimizer, criterion: nn.Module, device: str, num_epochs: int, save_dir: Path, log_path: Path) -> None:
+    last_checkpoint_path = save_dir / "model_checkpoint.pth"
+    best_checkpoint_path = save_dir / "model_best.pth"
+    
     performance_curves = defaultdict(list)
     prev_epoch_eval_loss = None
     for epoch in range(num_epochs):
@@ -162,8 +164,10 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
                 or
             curr_epoch_eval_loss < prev_epoch_eval_loss
         ):
-            save_checkpoint(epoch, model, optimizer, checkpoint_path)
-            print(f"Checkpoint saved at {checkpoint_path}")
+            save_checkpoint(epoch, model, optimizer, best_checkpoint_path)
+            print("-- New best --")
+
+        save_checkpoint(epoch, model, optimizer, last_checkpoint_path)
 
         # save performance logs
         performance_curves['epoch'].append(epoch)
@@ -184,7 +188,7 @@ train_and_evaluate(
     model = model,
     train_loader = train_loader,
     evaluation_loader = test_loader,
-    evaluation_split = "test",
+    evaluation_split = "validate",
     optimizer = optimizer,
     criterion = criterion,
     device = device,

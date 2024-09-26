@@ -12,6 +12,7 @@ import pandas as pd
 from tqdm import tqdm
 
 from utils import transform
+from utils.dataset import get_iter_to_iter_dict
 
 PYTORCH_SECOND_NORMALIZATION_DICT = {
     'mean': [0.485, 0.456, 0.406],
@@ -92,19 +93,22 @@ class MulticlassDataset(Dataset):
 
         self.second_norm_dict = second_norm_dict
 
-    def _hash_filename(self, filename: str) -> int:
-        """Generate a 32-bit FNV-1a hash value for a given filename.
+    def _hash_string(self, s: str) -> int:
+        """Generate a 32-bit FNV-1a hash value for a given string.
 
         Args:
-            filename (str): Filename as string
+            s (str): String to hash
 
         Returns:
             int: 32-bit hash value
         """
-        return transform.fnv1a_32(filename)
+        return transform.fnv1a_32(s)
     
-    def _get_filenames(self) -> list[str]:
+    def _get_filenames(self, df: pd.DataFrame) -> list[str]:
         """Get a list of filenames from the specified images_path that fall in the split
+
+        Args:
+            df (pd.DataFrame): Dataframe of PadChest information
 
         Returns:
             list[str]: List of string filenames
@@ -112,6 +116,10 @@ class MulticlassDataset(Dataset):
         all_filenames = os.listdir(self.images_path)
         n = len(all_filenames)
         selected_filenames = []
+        filename_to_patientID = get_iter_to_iter_dict(
+            iter1 = df['Filename'],
+            iter2 = df['PatientID']
+        )
 
         # use tqdm progress bar
         pbar = tqdm(
@@ -122,7 +130,9 @@ class MulticlassDataset(Dataset):
 
         for i in range(n):
             filename = all_filenames[i]
-            hash = self._hash_filename(filename)
+            patient_ID = filename_to_patientID[filename]
+            hash = self._hash_filename(patient_ID)
+
             if (
                 (hash <= self.hash_split1 and self.split == "train")
                     or

@@ -53,7 +53,6 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     
     metrics['cohen_kappa'] = get_metric_macro(all_labels, all_preds, cohen_kappa_score)
     metrics['mcc'] = get_metric_macro(all_labels, all_preds, matthews_corrcoef)
-    metrics['exact_match_ratio'] = (all_preds == all_labels).all(axis=1).mean()
     
     metrics['jaccard_similarity'] = get_metric_macro(all_labels, all_preds, jaccard_score, average='binary')
     metrics['hamming_loss'] = get_metric_macro(all_labels, all_preds, hamming_loss)
