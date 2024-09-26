@@ -86,7 +86,7 @@ class MulticlassDataset(Dataset):
         self.hash_split1 = int(self.possible_hashes * self.split_pct1)
         self.hash_split2 = int(self.possible_hashes * self.split_pct2)
 
-        self.filenames = self._get_filenames()
+        self.filenames = self._get_filenames(df)
         self.labels = th.from_numpy(
             self._get_labels()
         )
