@@ -26,12 +26,14 @@ class ConvNeXt_Base(nn.Module):
     def __init__(self, num_classes: int, weights: dict | None) -> None:
         super().__init__()
         self.model = convnext_base(
-            num_classes = num_classes,
             weights = weights
         )
-        self.output_sigmoid = nn.Sigmoid()
+        self.model.classifier = nn.Sequential(
+            nn.LayerNorm(self.model.classifier[1].in_features),
+            nn.Linear(self.model.classifier[1].in_features, num_classes),
+            nn.Sigmoid()
+        )
 
     def forward(self, x: th.Tensor) -> th.Tensor:
         x = self.model(x)
-        x = self.output_sigmoid(x)
         return x
