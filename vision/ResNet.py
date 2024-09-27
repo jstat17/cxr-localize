@@ -28,10 +28,7 @@ class ResNet50(nn.Module):
         self.model = resnet50(
             weights = weights
         )
-        self.model.fc = nn.Sequential(
-            nn.Linear(self.model.fc.in_features, num_classes),
-            nn.Sigmoid()
-        )
+        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
 
     def forward(self, x: th.Tensor) -> th.Tensor:
         x = self.model(x)

@@ -31,8 +31,7 @@ class ConvNeXt_Base(nn.Module):
         self.model.classifier = nn.Sequential(
             self.model.classifier[0],  # Flatten layer
             self.model.classifier[1],  # LayerNorm layer
-            nn.Linear(self.model.classifier[2].in_features, num_classes),
-            nn.Sigmoid()
+            nn.Linear(self.model.classifier[2].in_features, num_classes)
         )
 
     def forward(self, x: th.Tensor) -> th.Tensor:

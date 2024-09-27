@@ -36,7 +36,7 @@ else:
 model = model.to(device)
 
 # Loss function and optimizer
-criterion = nn.BCELoss()  # For multi-label classification
+criterion = nn.BCEWithLogitsLoss()  # For multi-label classification
 optimizer = optim.AdamW(
     params = model.parameters(),
     lr = 1e-3

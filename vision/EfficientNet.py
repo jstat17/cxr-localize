@@ -30,8 +30,7 @@ class EfficientNet_B0(nn.Module):
         )
         self.model.classifier = nn.Sequential(
             self.model.classifier[0],  # Dropout layer
-            nn.Linear(self.model.classifier[1].in_features, num_classes),
-            nn.Sigmoid()
+            nn.Linear(self.model.classifier[1].in_features, num_classes)
         )
 
     def forward(self, x: th.Tensor) -> th.Tensor:

@@ -28,10 +28,7 @@ class Swin_S(nn.Module):
         self.model = swin_s(
             weights = weights
         )
-        self.model.head = nn.Sequential(
-            nn.Linear(self.model.head.in_features, num_classes),
-            nn.Sigmoid()
-        )
+        self.model.head = nn.Linear(self.model.head.in_features, num_classes)
 
     def forward(self, x: th.Tensor) -> th.Tensor:
         x = self.model(x)
