@@ -29,7 +29,7 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
             outputs = model(images)
             loss = criterion(outputs, labels)
             all_losses.append(loss.item())
-            preds = (outputs > 0.5).float()
+            preds = (th.sigmoid(outputs) > 0.5).float()
 
             all_preds.append(preds.cpu())
             all_labels.append(labels.cpu())
