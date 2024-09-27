@@ -29,9 +29,14 @@ class FocalLoss(nn.Module):
         """
         # Apply sigmoid to get probabilities
         BCE_loss = nn.BCEWithLogitsLoss(reduction='none')(inputs, targets)
-        pt = th.exp(-BCE_loss)  # Probability of true class
+        
+        # Compute p_t (probability of the true class)
+        pt = th.where(targets == 1, th.sigmoid(inputs), 1 - th.sigmoid(inputs))
+
+        # Focal loss calculation
         F_loss = self.alpha * (1 - pt) ** self.gamma * BCE_loss
         
+        # Apply reduction
         if self.reduction == 'mean':
             return F_loss.mean()
         elif self.reduction == 'sum':
