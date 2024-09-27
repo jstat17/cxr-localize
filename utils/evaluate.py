@@ -3,7 +3,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, f1_score,\
                             roc_auc_score, average_precision_score, cohen_kappa_score, matthews_corrcoef,\
-                            jaccard_score, hamming_loss
+                            jaccard_score, hamming_loss, confusion_matrix
 from tqdm import tqdm
 import numpy as np
 from collections.abc import Callable
@@ -53,9 +53,8 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics['precision_macro'] = precision_score(all_labels, all_preds, average='macro')
     metrics['precision_micro'] = precision_score(all_labels, all_preds, average='micro')
 
-    # recall
-    metrics['recall_macro'] = recall_score(all_labels, all_preds, average='macro')
-    metrics['recall_micro'] = recall_score(all_labels, all_preds, average='micro')
+    # specificity
+    metrics['specificity'] = get_metric_macro(all_labels, all_preds, specificity_score)
 
     # F1
     metrics['f1_macro']= f1_score(all_labels, all_preds, average='macro')
@@ -95,3 +94,21 @@ def get_metric_macro(y_true, y_pred, metric: Callable, **kwargs: Any) -> float:
             aucs.append(auc)
 
     return np.mean(aucs)
+
+def specificity_score(y_true, y_pred):
+    """
+    Compute specificity from true and predicted labels.
+
+    Parameters:
+    y_true (list or array-like): True binary labels.
+    y_pred (list or array-like): Predicted binary labels.
+
+    Returns:
+    float: Specificity value.
+    """
+    # Calculate confusion matrix
+    tn, fp, _fn, _tp = confusion_matrix(y_true, y_pred).ravel()
+    
+    # Calculate specificity
+    specificity = tn / (tn + fp) if (tn + fp) > 0 else 0.0  # Avoid division by zero
+    return specificity
