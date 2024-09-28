@@ -6,15 +6,13 @@ import skimage
 
 from utils import transform
 
-"""Resize cropped images.
+"""Resize images.
    Run from cxr-localize:
-        python -m script.resize_images /path/to/crop/root size
+        python -m script.resize_images /path/to/images /path/to/resized size
 """
 
-def main(crop_path: Path, size: int) -> None:
-    # make directory to move images to
-    images_path = crop_path / "images"
-    images_resize_path = crop_path / f"images-{size}"
+def main(images_path: Path, images_resize_path: Path, size: int) -> None:
+    # make directory to save resized images to
     os.makedirs(images_resize_path, exist_ok=True)
 
     # resize and save images with progress bar
@@ -45,13 +43,15 @@ def main(crop_path: Path, size: int) -> None:
 
 if __name__ == "__main__":
     # set up argument parsing
-    parser = ArgumentParser(description='Resize cropped images')
-    parser.add_argument('crop_path', type=str, help="Path to the cropped images root (parent directory that includes logs, images and masks)")
+    parser = ArgumentParser(description='Resize images')
+    parser.add_argument('images_path', type=str, help="Path to images")
+    parser.add_argument('images_resize_path', type=str, help="Desired path for resized images")
     parser.add_argument('size', type=int, help="Image will be resized to (size, size) shape")
 
     # parse command line arguments
     args = parser.parse_args()
-    crop_path = Path(args.crop_path)
+    images_path = Path(args.images_path)
+    images_resize_path = Path(args.images_resize_path)
     size = args.size
 
-    main(crop_path, size)
+    main(images_path, images_resize_path, size)
