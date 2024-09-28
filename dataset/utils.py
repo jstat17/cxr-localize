@@ -1,3 +1,7 @@
+import gzip
+import os
+import tarfile
+from pathlib import Path
 from collections.abc import Iterable
 from typing import Any
 
@@ -29,3 +33,39 @@ def get_iter_to_iter_dict(iter1: Iterable[Any], iter2: Iterable[Any]) -> dict[An
         mapping[iter1_val] = iter2_val
     
     return mapping
+
+def extract_files_from_gzips(gzip_path: Path, extract_path: Path) -> None:
+    """Extract all files from gzip-compressed files
+    
+    Args:
+        gzip_path (Path): Path to gzips
+        extract_path (Path): Desired extract path for all files
+    """
+    os.makedirs(extract_path, exist_ok=True)
+    existing_filenames = set(
+        os.listdir(extract_path)
+    )
+    gzip_filenames = os.listdir(gzip_path)
+
+    # iterate through all gzips
+    for filename in gzip_filenames:
+        gzip_path = gzip_path / filename
+        n_extracted = 0
+
+        # read and decompress the gzip file into memory
+        with gzip.open(gzip_path, 'rb') as gz:
+            # open the tar file from the decompressed gzip content
+            with tarfile.open(fileobj=gz, mode='r:') as tar:
+                for tar_member in tar.getmembers():
+                    # extract tar member if it has not been extracted before
+                    if tar_member.name not in existing_filenames:
+                        file_obj = tar.extractfile(tar_member)
+
+                        if file_obj is not None:
+                            image_path = extract_path / tar_member.name
+                            with open(image_path, 'wb') as out_file:
+                                out_file.write(file_obj.read())
+
+                            n_extracted += 1
+
+        print(f"Extracted {n_extracted} file/s from {gzip_path}")

@@ -191,7 +191,9 @@ def extract_files_from_zips(zip_to_filenames: dict[int, list[str]], padchest_pat
         extract_path (Path): Desired extract path for all files
     """
     os.makedirs(extract_path, exist_ok=True)
-    existing_filenames = os.listdir(extract_path)
+    existing_filenames = set(
+        os.listdir(extract_path)
+    )
 
     for zip_num, filenames in zip_to_filenames.items():
         zip_path = padchest_path / f"{zip_num}.zip"

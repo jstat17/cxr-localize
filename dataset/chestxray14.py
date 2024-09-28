@@ -2,6 +2,8 @@ import hashlib
 from natsort import natsorted
 from pathlib import Path
 
+## Global constants
+# list of tuples from md5 hash to gzip
 MD5_FILE_HASHES = [
     ("fe8ed0a6961412fddcbb3603c11b3698", "vfk49d74nhbxq3nqjg0900w5nvkorp5c.gz"), # images_001.tar.gz
     ("ab07a2d7cbe6f65ddd97b4ed7bde10bf", "i28rlmbvmfjbl8p2n3ril0pptcmcu9d1.gz"), # images_002.tar.gz
@@ -17,6 +19,8 @@ MD5_FILE_HASHES = [
     ("dc9fda1757c2de0032b63347a7d2895c", "ioqwiy20ihqwyr8pf4c24eazhh281pbu.gz"), # images_012.tar.gz
 ]
 
+
+## Data management functions
 def verify_md5_hashes(chestxray14_gzip_path: Path) -> None:
     """Verify the MD5 hashes of the Chest X-ray 14 gzip files
 
