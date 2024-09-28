@@ -3,7 +3,7 @@ from pathlib import Path
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-from utils import dataset
+from dataset import padchest
 
 def get_crop_intersection(padchest_path: Path, crop_path: Path) -> dict[str, float]:
     """Get the percentage intersection of cropped images with the original.
@@ -16,7 +16,7 @@ def get_crop_intersection(padchest_path: Path, crop_path: Path) -> dict[str, flo
         dict[str, float]: Dictionary from filename (without extension) to percentage of intersection
     """
     log_path = crop_path / "logs"
-    df = dataset.get_padchest_dataframe(padchest_path)
+    df = padchest.get_padchest_dataframe(padchest_path)
 
     log_filenames = os.listdir(log_path)
 

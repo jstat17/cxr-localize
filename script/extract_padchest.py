@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 from natsort import natsorted
 
-from utils import dataset
+from dataset import padchest
 
 """Extract specified files from PadChest.
    Run from cxr-localize:
@@ -12,7 +12,7 @@ from utils import dataset
 
 def main(padchest_path: Path, extract_path: Path) -> None:
     # get dataframe of file info
-    df = dataset.get_padchest_dataframe(padchest_path)
+    df = padchest.get_padchest_dataframe(padchest_path)
 
     # create a dictionary from zip number to list of filenames
     zip_nums = np.sort(df['Zip Number'].unique())
@@ -24,7 +24,7 @@ def main(padchest_path: Path, extract_path: Path) -> None:
         zip_to_filename[zip_num] = natsorted(filenames.to_list())
 
     # extract specified PadChest files to the extract path
-    dataset.extract_files_from_zips(
+    padchest.extract_files_from_zips(
         zip_to_filenames = zip_to_filename,
         padchest_path = padchest_path,
         extract_path = extract_path

@@ -5,9 +5,9 @@ from torch.utils.data import DataLoader
 import os
 from pathlib import Path
 
-from utils.dataset import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
+from dataset import padchest
+from dataset.padchest import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
-from utils import dataset
 from utils.train import train_and_evaluate
 from vision.EfficientNet import get_efficientnet_b0
 
@@ -55,7 +55,7 @@ batch_size = 64
 num_workers = 8
 
 # Data loaders
-df = dataset.get_padchest_dataframe(padchest_path)
+df = padchest.get_padchest_dataframe(padchest_path)
 train_dataset = MulticlassDatasetInMemory(
     df = df,
     images_path = images_path,

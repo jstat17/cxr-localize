@@ -1,6 +1,7 @@
-from utils import dataset
 from argparse import ArgumentParser
 from pathlib import Path
+
+from dataset import padchest
 
 """Verify the SHA-1 sums of the PadChest dataset files.
    Run from cxr-localize:
@@ -9,7 +10,7 @@ from pathlib import Path
 
 def main(padchest_path: Path) -> None:
     # verify sha-1 sums at the specified PadChest directory
-    dataset.verify_sha1sums(padchest_path)
+    padchest.verify_sha1sums(padchest_path)
 
 if __name__ == "__main__":
     # set up argument parsing
