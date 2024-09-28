@@ -57,12 +57,15 @@ def extract_files_from_gzips(gzip_path: Path, extract_path: Path) -> None:
             # open the tar file from the decompressed gzip content
             with tarfile.open(fileobj=gz, mode='r:') as tar:
                 for tar_member in tar.getmembers():
+                    # get the base name of the file, which removes folder structure
+                    tar_member_filename = Path(tar_member.name).name
+
                     # extract tar member if it has not been extracted before
-                    if tar_member.name not in existing_filenames:
+                    if tar_member_filename not in existing_filenames:
                         file_obj = tar.extractfile(tar_member)
 
                         if file_obj is not None:
-                            image_path = extract_path / tar_member.name
+                            image_path = extract_path / tar_member_filename
                             with open(image_path, 'wb') as out_file:
                                 out_file.write(file_obj.read())
 
