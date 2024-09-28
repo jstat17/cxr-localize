@@ -34,22 +34,22 @@ def get_iter_to_iter_dict(iter1: Iterable[Any], iter2: Iterable[Any]) -> dict[An
     
     return mapping
 
-def extract_files_from_gzips(gzip_path: Path, extract_path: Path) -> None:
+def extract_files_from_gzips(gzips_path: Path, extract_path: Path) -> None:
     """Extract all files from gzip-compressed files
     
     Args:
-        gzip_path (Path): Path to gzips
+        gzips_path (Path): Path to gzips
         extract_path (Path): Desired extract path for all files
     """
     os.makedirs(extract_path, exist_ok=True)
     existing_filenames = set(
         os.listdir(extract_path)
     )
-    gzip_filenames = os.listdir(gzip_path)
+    gzips_filenames = os.listdir(gzips_path)
 
     # iterate through all gzips
-    for filename in gzip_filenames:
-        gzip_path = gzip_path / filename
+    for filename in gzips_filenames:
+        gzip_path = gzips_path / filename
         n_extracted = 0
 
         # read and decompress the gzip file into memory
