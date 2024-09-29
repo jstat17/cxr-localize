@@ -2,7 +2,26 @@ import torch as th
 from torch import nn
 from torchvision.models import convnext_base, ConvNeXt_Base_Weights
 
-def get_convnext_base(num_classes: int, weights: str | None) -> nn.Module:
+
+class ConvNeXt_Base(nn.Module):
+    def __init__(self, num_classes: int, weights: dict | None) -> None:
+        super().__init__()
+        self.fullname = "ConvNeXt-Base"
+        self.model = convnext_base(
+            weights = weights
+        )
+        self.model.classifier = nn.Sequential(
+            self.model.classifier[0],  # Flatten layer
+            self.model.classifier[1],  # LayerNorm layer
+            nn.Linear(self.model.classifier[2].in_features, num_classes)
+        )
+
+    def forward(self, x: th.Tensor) -> th.Tensor:
+        x = self.model(x)
+        return x
+
+
+def get_convnext_base(num_classes: int, weights: str | None) -> ConvNeXt_Base:
     if isinstance(weights, str):
         weights = weights.casefold()
     
@@ -21,19 +40,3 @@ def get_convnext_base(num_classes: int, weights: str | None) -> nn.Module:
     )
 
     return model
-
-class ConvNeXt_Base(nn.Module):
-    def __init__(self, num_classes: int, weights: dict | None) -> None:
-        super().__init__()
-        self.model = convnext_base(
-            weights = weights
-        )
-        self.model.classifier = nn.Sequential(
-            self.model.classifier[0],  # Flatten layer
-            self.model.classifier[1],  # LayerNorm layer
-            nn.Linear(self.model.classifier[2].in_features, num_classes)
-        )
-
-    def forward(self, x: th.Tensor) -> th.Tensor:
-        x = self.model(x)
-        return x

@@ -85,7 +85,11 @@ for abnorm_shen, abnorm_padchest in ABNORMALITY_MAPPING:
     PADCHEST_TO_SHENZHEN_MAPPING[abnorm_padchest].append(abnorm_shen)
 
 # PadChest abnormalities that are common with Shenzhen
-PADCHEST_ABNORMALITIES_COMMON_SHENZHEN = list(PADCHEST_TO_SHENZHEN_MAPPING.keys())
+PADCHEST_ABNORMALITIES_COMMON_SHENZHEN = sorted(
+    list(
+        PADCHEST_TO_SHENZHEN_MAPPING.keys()
+    )
+)
 
 PADCHEST_DISEASES = [
     "pneumonia",

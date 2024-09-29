@@ -2,7 +2,21 @@ import torch as th
 from torch import nn
 from torchvision.models import swin_s, Swin_S_Weights
 
-def get_swin_s(num_classes: int, weights: str | None) -> nn.Module:
+class Swin_S(nn.Module):
+    def __init__(self, num_classes: int, weights: dict | None) -> None:
+        super().__init__()
+        self.fullname = "Swin-S"
+        self.model = swin_s(
+            weights = weights
+        )
+        self.model.head = nn.Linear(self.model.head.in_features, num_classes)
+
+    def forward(self, x: th.Tensor) -> th.Tensor:
+        x = self.model(x)
+        return x
+
+
+def get_swin_s(num_classes: int, weights: str | None) -> Swin_S:
     if isinstance(weights, str):
         weights = weights.casefold()
     
@@ -21,15 +35,3 @@ def get_swin_s(num_classes: int, weights: str | None) -> nn.Module:
     )
 
     return model
-
-class Swin_S(nn.Module):
-    def __init__(self, num_classes: int, weights: dict | None) -> None:
-        super().__init__()
-        self.model = swin_s(
-            weights = weights
-        )
-        self.model.head = nn.Linear(self.model.head.in_features, num_classes)
-
-    def forward(self, x: th.Tensor) -> th.Tensor:
-        x = self.model(x)
-        return x

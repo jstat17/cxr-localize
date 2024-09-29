@@ -2,7 +2,25 @@ import torch as th
 from torch import nn
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 
-def get_efficientnet_b0(num_classes: int, weights: str | None) -> nn.Module:
+
+class EfficientNet_B0(nn.Module):
+    def __init__(self, num_classes: int, weights: dict | None) -> None:
+        super().__init__()
+        self.fullname = "EfficientNet-B0"
+        self.model = efficientnet_b0(
+            weights = weights
+        )
+        self.model.classifier = nn.Sequential(
+            self.model.classifier[0],  # Dropout layer
+            nn.Linear(self.model.classifier[1].in_features, num_classes)
+        )
+
+    def forward(self, x: th.Tensor) -> th.Tensor:
+        x = self.model(x)
+        return x
+
+
+def get_efficientnet_b0(num_classes: int, weights: str | None) -> EfficientNet_B0:
     if isinstance(weights, str):
         weights = weights.casefold()
     
@@ -21,18 +39,3 @@ def get_efficientnet_b0(num_classes: int, weights: str | None) -> nn.Module:
     )
 
     return model
-
-class EfficientNet_B0(nn.Module):
-    def __init__(self, num_classes: int, weights: dict | None) -> None:
-        super().__init__()
-        self.model = efficientnet_b0(
-            weights = weights
-        )
-        self.model.classifier = nn.Sequential(
-            self.model.classifier[0],  # Dropout layer
-            nn.Linear(self.model.classifier[1].in_features, num_classes)
-        )
-
-    def forward(self, x: th.Tensor) -> th.Tensor:
-        x = self.model(x)
-        return x
