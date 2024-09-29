@@ -92,13 +92,13 @@ def print_metrics(metrics: dict[str: float], cols: int = 3) -> None:
 
 def get_metric_macro(y_true, y_pred, metric: Callable, **kwargs: Any) -> float:
     # solves problem where there could be only one class in the true labels
-    metrics = []
+    values = []
     for i in range(y_true.shape[1]):
         if len(set(y_true[:, i])) > 1:  # check if there is more than one class
-            metric = metric(y_true[:, i], y_pred[:, i], **kwargs)
-            metrics.append(metric)
+            value = metric(y_true[:, i], y_pred[:, i], **kwargs)
+            values.append(value)
 
-    return np.mean(metrics)
+    return np.mean(values)
 
 def specificity_score(y_true, y_pred):
     """
