@@ -9,7 +9,7 @@ from dataset import padchest
 from dataset.padchest import PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils.train import train_and_evaluate
-from vision.ConvNeXt import get_convnext_base
+from vision.convnext import get_convnext_base
 
 # setting parallel config
 parallel = True
