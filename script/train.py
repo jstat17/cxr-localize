@@ -14,6 +14,7 @@ from vision.resnet import get_resnet50
 from vision.convnext import get_convnext_base
 from vision.efficientnet import get_efficientnet_b0
 from vision.swin import get_swin_s
+from loss.wbce import WeightedBCEWithLogitsLoss
 
 """Train a vision model on the given dataset/s.
    Run from cxr-localize:
@@ -62,6 +63,7 @@ if __name__ == "__main__":
     parser.add_argument('-n', '--num_epochs', type=int, default=100, help="Number of epochs to train for")
     parser.add_argument('-b', '--batch_size', type=int, default=64, help="Batch size")
     parser.add_argument('-lr', '--learning_rate', type=str, default=1e-3, help="Initial learning rate")
+    parser.add_argument('-l', '--loss', type=str, default='bce', help="Loss function")
     parser.add_argument('-p1', '--split_pct1', type=float, default=0.8, help="The training split percent")
     parser.add_argument('-p2', '--split_pct2', type=float, default=0.9, help="The training and validation split percent")
     parser.add_argument('-w1', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
@@ -91,6 +93,7 @@ if __name__ == "__main__":
     num_epochs = args.num_epochs
     batch_size = args.batch_size
     learning_rate = float(args.learning_rate)
+    loss = args.loss.casefold()
 
     split_pct1 = args.split_pct1
     split_pct2 = args.split_pct2
@@ -138,8 +141,14 @@ if __name__ == "__main__":
                 case "s":
                     model = get_swin_s(num_classes, weights)
 
-    # loss function and optimizer
-    criterion = nn.BCEWithLogitsLoss()
+    # set loss function
+    match loss:
+        case 'bce':
+            criterion = nn.BCEWithLogitsLoss()
+        case 'wbce':
+            criterion = WeightedBCEWithLogitsLoss()
+
+    # set optimizer
     optimizer = optim.AdamW(
         params = model.parameters(),
         lr = learning_rate
