@@ -17,5 +17,5 @@ class WeightedBCEWithLogitsLoss(nn.Module):
         weights = th.where(targets == 1, beta_p, beta_n)
 
         # Calculate the loss
-        loss = F.binary_cross_entropy_with_logits(inputs, targets, weight=weights, reduction='sum')
+        loss = F.binary_cross_entropy_with_logits(inputs, targets, weight=weights, reduction='mean')
         return loss
