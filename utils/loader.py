@@ -212,6 +212,10 @@ class MulticlassDataset(Dataset):
         image = image.astype(np.float32)
         image = image / max_dtype_value
 
+        # ensure image is grayscale (single channel)
+        if len(image.shape) == 3:
+            image = image[:, :, 0] # (H, W, C) -> (H, W)
+
         # resize
         if resize and image.shape != self.img_shape:
             image = transform.resize(image, self.img_shape)
