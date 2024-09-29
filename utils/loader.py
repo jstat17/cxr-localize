@@ -8,6 +8,7 @@ import torchxrayvision as xrv
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 from tqdm import tqdm
+from typing import Any
 
 from utils import transform
 from dataset.utils import get_iter_to_iter_dict
@@ -91,16 +92,16 @@ class MulticlassDataset(Dataset):
 
         self.second_norm_dict = second_norm_dict
 
-    def _hash_string(self, s: str) -> int:
-        """Generate a 32-bit FNV-1a hash value for a given string.
+    def _hash_value(self, val: Any) -> int:
+        """Generate a 32-bit FNV-1a hash value for a given input.
 
         Args:
-            s (str): String to hash
+            val (Any): Value to hash
 
         Returns:
             int: 32-bit hash value
         """
-        return transform.fnv1a_32(s)
+        return transform.fnv1a_32(val)
     
     def _get_filenames(self, df: pd.DataFrame) -> list[str]:
         """Get a list of filenames from the specified images_path that fall in the split
@@ -128,8 +129,13 @@ class MulticlassDataset(Dataset):
 
         for i in range(n):
             filename = all_filenames[i]
-            patient_ID = filename_to_patientID[filename]
-            hash = self._hash_string(patient_ID)
+            try:
+                patient_ID = filename_to_patientID[filename]
+            except KeyError:
+                pbar.update(1)
+                continue
+
+            hash = self._hash_value(patient_ID)
 
             if (
                 (hash <= self.hash_split1 and self.split == "train")
