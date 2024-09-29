@@ -15,6 +15,12 @@ from vision.convnext import get_convnext_base
 from vision.efficientnet import get_efficientnet_b0
 from vision.swin import get_swin_s
 
+"""Train a vision model on the given dataset/s.
+   Run from cxr-localize:
+        python -m script.train ..args..
+"""
+
+# directory constants
 HOME = Path.home()
 DATASETS_PATH = HOME / "Datasets"
 PADCHEST_CONF_PATH = DATASETS_PATH / "PadChest"
@@ -45,22 +51,22 @@ def main(device: str, parallel: bool, model: nn.Module, criterion: nn.Module, op
 
 if __name__ == "__main__":
     # set up argument parsing
-    parser = ArgumentParser(description='Train a vision model on the given dataset.')
+    parser = ArgumentParser(description='Train a vision model on the given dataset/s.')
     parser.add_argument('model_name', type=str, help='Model to train')
     parser.add_argument('model_size', type=str, help='Model size')
     parser.add_argument('-img', '--images_path', nargs='+', type=str, default=[str(HOME)], help='Path to images')
     parser.add_argument('-ds', '--dataset', nargs='+', type=str, default=['padchest'], help="Training dataset/s ('padchest', 'chestxray14')")
     parser.add_argument('-s', '--size', type=int, default=224, help="Image size")
-    parser.add_argument('-d, --device', type=str, default='cuda', help="The device used to train the model ('cpu' or 'cuda')")
-    parser.add_argument('-p, --parallel', type=bool, default=True, help="Whether to train in parallel on multiple GPUs")
-    parser.add_argument('-n, --num_epochs', type=int, default=100, help="Number of epochs to train for")
-    parser.add_argument('-b, --batch_size', type=int, default=64, help="Batch size")
-    parser.add_argument('-lr, --learning_rate', type=str, default=1e-3, help="Initial learning rate")
-    parser.add_argument('-p1, --split_pct1', type=float, default=0.8, help="The training split percent")
-    parser.add_argument('-p2, --split_pct2', type=float, default=0.9, help="The training and validation split percent")
-    parser.add_argument('-w1, --workers_train', type=int, default=32, help="Number of training dataloader workers")
-    parser.add_argument('-w2, --workers_validate', type=int, default=8, help="Number of validation dataloader workers")
-    parser.add_argument('-wg, --weights', type=str, default='None', help="Initial weights to use for the model ('imagenet' or 'None')")
+    parser.add_argument('-d', '--device', type=str, default='cuda', help="The device used to train the model ('cpu' or 'cuda')")
+    parser.add_argument('-p', '--parallel', type=bool, default=True, help="Whether to train in parallel on multiple GPUs")
+    parser.add_argument('-n', '--num_epochs', type=int, default=100, help="Number of epochs to train for")
+    parser.add_argument('-b', '--batch_size', type=int, default=64, help="Batch size")
+    parser.add_argument('-lr', '--learning_rate', type=str, default=1e-3, help="Initial learning rate")
+    parser.add_argument('-p1', '--split_pct1', type=float, default=0.8, help="The training split percent")
+    parser.add_argument('-p2', '--split_pct2', type=float, default=0.9, help="The training and validation split percent")
+    parser.add_argument('-w1', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
+    parser.add_argument('-w2', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
+    parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
 
     # parse command line arguments
     args = parser.parse_args()
@@ -81,7 +87,7 @@ if __name__ == "__main__":
 
     num_epochs = args.num_epochs
     batch_size = args.batch_size
-    learning_rate = args.learning_rate
+    learning_rate = float(args.learning_rate)
 
     split_pct1 = args.split_pct1
     split_pct2 = args.split_pct2
