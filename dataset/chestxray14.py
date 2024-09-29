@@ -1,6 +1,7 @@
 import hashlib
 from natsort import natsorted
 from pathlib import Path
+import pandas as pd
 
 ## Global constants
 # list of tuples from md5 hash to gzip
@@ -19,8 +20,92 @@ MD5_FILE_HASHES = [
     ("dc9fda1757c2de0032b63347a7d2895c", "ioqwiy20ihqwyr8pf4c24eazhh281pbu.gz"), # images_012.tar.gz
 ]
 
+# images with issues that are ignored (eg. completely white)
+IGNORED_IMAGES = [
+    "00007160_002.png",
+    "00010007_121.png",
+]
+
+# column information
+DROPPED_COLUMNS = [
+    'OriginalImagePixelSpacing[x',
+    'y]',
+    'OriginalImage[Width',
+    'Height]'
+]
+
+RENAME_COLUMN_MAPPING = {
+    'Image Index': 'Filename',
+    'Patient ID': 'PatientID'
+}
+
+CXR_14_ABNORMALITIES = [
+    'Atelectasis',
+    'Cardiomegaly',
+    'Consolidation',
+    'Edema',
+    'Effusion',
+    'Emphysema',
+    'Fibrosis',
+    'Hernia',
+    'Infiltration',
+    'Mass',
+    'Nodule',
+    'Pleural Thickening',
+    'Pneumonia',
+    'Pneumothorax'
+]
 
 ## Data management functions
+def get_chestxray14_dataframe(chestxray14_path: Path) -> pd.DataFrame:
+    # load csv of dataset info
+    csv_path = chestxray14_path / "Data_Entry_2017_v2020.csv"
+    df_cxr14 = pd.read_csv(csv_path)
+
+    # drop and rename columns
+    df_cxr14.drop(
+        columns = DROPPED_COLUMNS,
+        inplace = True
+    )
+    df_cxr14.rename(
+        columns = RENAME_COLUMN_MAPPING,
+        inplace = True
+    )
+
+    # add image row and column info
+    df_cxr14['Rows'] = 1024
+    df_cxr14['Columns'] = 1024
+
+    # remove corrupt images
+    df_cxr14 = df_cxr14[
+        ~ (
+            df_cxr14['Filename'].isin(IGNORED_IMAGES)
+        )
+    ]
+
+    # create Labels column as lists of strings
+    df_cxr14["Labels"] = df_cxr14['Finding Labels'].apply(
+        lambda labels_str: labels_str.split("|")
+    )
+    df_cxr14['Labels'] = df_cxr14['Labels'].apply(
+        lambda labels: [
+            " ".join(label.split("_")) for label in labels
+            if label != "No Finding"
+        ]
+    )
+    df_cxr14.drop(
+        columns = ['Finding Labels'],
+        inplace = True
+    )
+
+    # reset index
+    df_cxr14.reset_index(
+        drop = True,
+        inplace = True
+    )
+
+    return df_cxr14
+
 def verify_md5_hashes(chestxray14_gzip_path: Path) -> None:
     """Verify the MD5 hashes of the Chest X-ray 14 gzip files
 

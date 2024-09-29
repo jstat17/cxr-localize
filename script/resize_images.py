@@ -20,7 +20,8 @@ def main(images_path: Path, images_resize_path: Path, size: int) -> None:
     all_files = os.listdir(images_path)
     pbar = tqdm(
         total = len(all_files),
-        desc = "Resizing and saving files..."
+        desc = "Resizing and saving files...",
+        unit = "images"
     )
     new_shape = (size, size)
     for file in all_files:
