@@ -2,6 +2,7 @@ import torch as th
 import numpy as np
 import cv2
 from math import ceil, floor
+from typing import Any
 
 def resize(image: np.ndarray, shape: tuple[int, int]) -> np.ndarray:
     """Linearly resize an image to a new size.
@@ -189,15 +190,17 @@ def make_bounding_box_square(x1: int, y1: int, x2: int, y2: int, shape: tuple[in
     else:
         return z1, w1, z2, w2
     
-def fnv1a_32(string: str) -> int:
+def fnv1a_32(val: Any) -> int:
     """FNV-1a 32-bit hashing function."""
+    val = str(val)
+
     # 32-bit FNV offset basis and prime
     FNV_prime = 0x01000193
     FNV_offset_basis = 0x811C9DC5
 
     # Convert the string into bytes (UTF-8 encoding)
     hash_value = FNV_offset_basis
-    for byte in string.encode('utf-8'):
+    for byte in val.encode('utf-8'):
         hash_value ^= byte
         hash_value *= FNV_prime
         hash_value &= 0xFFFFFFFF  # Ensure it's a 32-bit number
