@@ -10,6 +10,7 @@ from collections.abc import Callable
 from typing import Any
 
 def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str, criterion: nn.Module) -> dict[str, float]:
+    all_probas = []
     all_preds = []
     all_labels = []
     all_losses = []
@@ -29,12 +30,15 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
             outputs = model(images)
             loss = criterion(outputs, labels)
             all_losses.append(loss.item())
-            preds = (th.sigmoid(outputs) > 0.5).float()
+            probas = th.sigmoid(outputs)
+            preds = (probas > 0.5).float()
 
+            all_probas.append(probas.cpu())
             all_preds.append(preds.cpu())
             all_labels.append(labels.cpu())
 
     # stack batches into numpy arrays, shape (num_samples, num_classes)
+    all_probas = th.cat(all_probas).numpy().astype(float)
     all_preds = th.cat(all_preds).numpy().astype(int)
     all_labels = th.cat(all_labels).numpy().astype(int)
 
@@ -42,7 +46,7 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics = dict()
 
     # accuracy
-    metrics['accuracy_subset'] = accuracy_score(all_labels, all_preds) # all labels predicted correctly for an image
+    metrics['accuracy_sample'] = accuracy_score(all_labels, all_preds) # all labels predicted correctly for an image
     metrics['accuracy_label'] = get_metric_macro(all_labels, all_preds, accuracy_score) # number of labels predicted correctly
 
     # sensitivity
@@ -54,14 +58,15 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
     metrics['precision_micro'] = precision_score(all_labels, all_preds, average='micro')
 
     # specificity
-    metrics['specificity'] = get_metric_macro(all_labels, all_preds, specificity_score)
+    metrics['specificity_macro'] = get_metric_macro(all_labels, all_preds, specificity_score)
 
     # F1
     metrics['f1_macro']= f1_score(all_labels, all_preds, average='macro')
     metrics['f1_micro'] = f1_score(all_labels, all_preds, average='micro')
     
-    metrics['auc_roc'] = get_metric_macro(all_labels, all_preds, roc_auc_score)
-    metrics['auc_pr'] = get_metric_macro(all_labels, all_preds, average_precision_score)
+    # metrics that require scores instead of classifications
+    metrics['auc_roc_macro'] = get_metric_macro(all_labels, all_probas, roc_auc_score)
+    metrics['auc_pr_macro'] = get_metric_macro(all_labels, all_probas, average_precision_score)
     
     metrics['cohen_kappa'] = get_metric_macro(all_labels, all_preds, cohen_kappa_score)
     metrics['mcc'] = get_metric_macro(all_labels, all_preds, matthews_corrcoef)
@@ -87,13 +92,13 @@ def print_metrics(metrics: dict[str: float], cols: int = 3) -> None:
 
 def get_metric_macro(y_true, y_pred, metric: Callable, **kwargs: Any) -> float:
     # solves problem where there could be only one class in the true labels
-    aucs = []
+    metrics = []
     for i in range(y_true.shape[1]):
         if len(set(y_true[:, i])) > 1:  # check if there is more than one class
-            auc = metric(y_true[:, i], y_pred[:, i], **kwargs)
-            aucs.append(auc)
+            metric = metric(y_true[:, i], y_pred[:, i], **kwargs)
+            metrics.append(metric)
 
-    return np.mean(aucs)
+    return np.mean(metrics)
 
 def specificity_score(y_true, y_pred):
     """
