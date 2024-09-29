@@ -167,7 +167,7 @@ if __name__ == "__main__":
         shuffle = True
     )
 
-    validate_dataset = dataset_class(
+    validate_dataset = MulticlassDatasetInMemory(
         df = df,
         images_path = images_path,
         img_shape = image_size,
