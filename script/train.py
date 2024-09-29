@@ -67,6 +67,7 @@ if __name__ == "__main__":
     parser.add_argument('-w1', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
     parser.add_argument('-w2', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
+    parser.add_argument('-m', '--load_memory', type=bool, default=False, help="Whether to load all images into memory")
 
     # parse command line arguments
     args = parser.parse_args()
@@ -96,6 +97,8 @@ if __name__ == "__main__":
 
     workers_train = args.workers_train
     workers_validate = args.workers_validate
+
+    load_memory = args.load_memory
 
     weights = args.weights.casefold()
     if weights == "none":
@@ -143,7 +146,12 @@ if __name__ == "__main__":
     )
 
     # data loaders
-    train_dataset = MulticlassDatasetInMemory(
+    if load_memory:
+        dataset_class = MulticlassDatasetInMemory
+    else:
+        dataset_class = MulticlassDataset
+
+    train_dataset = dataset_class(
         df = df,
         images_path = images_path,
         img_shape = image_size,
@@ -159,7 +167,7 @@ if __name__ == "__main__":
         shuffle = True
     )
 
-    validate_dataset = MulticlassDatasetInMemory(
+    validate_dataset = dataset_class(
         df = df,
         images_path = images_path,
         img_shape = image_size,
