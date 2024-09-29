@@ -78,6 +78,8 @@ if __name__ == "__main__":
     images_path = args.images_path[0]
     if images_path[0:2] == "~/":
         images_path = HOME / args.images_path
+    else:
+        images_path = Path(images_path)
 
     dataset = args.dataset[0].casefold()
     image_size = args.size
@@ -133,12 +135,6 @@ if __name__ == "__main__":
                 case "s":
                     model = get_swin_s(num_classes, weights)
 
-    # creating save directory
-    save_dir_root = MODELS_PATH / model.fullname
-    os.makedirs(save_dir_root, exist_ok=True)
-
-    save_dir = get_next_run_folder(save_dir_root)
-
     # loss function and optimizer
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.AdamW(
@@ -178,6 +174,12 @@ if __name__ == "__main__":
         num_workers = workers_validate,
         shuffle = True
     )
+
+    # creating save directory
+    save_dir_root = MODELS_PATH / model.fullname
+    os.makedirs(save_dir_root, exist_ok=True)
+
+    save_dir = get_next_run_folder(save_dir_root)
 
     # save hyperparams log
     hyperparams = {
