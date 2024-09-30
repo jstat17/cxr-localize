@@ -1,4 +1,5 @@
 import os
+import json
 from pathlib import Path
 from argparse import ArgumentParser
 from tqdm import tqdm
@@ -57,8 +58,9 @@ def save_crop_and_mask(images_path: Path, save_path_images: Path, save_path_mask
         print(f"OSError in saving cropped image, crop could be blank: {e}")
 
     # save log
-    with open(save_path_logs / f"{filename.split('.')[0]}.txt", 'w') as f:
-        f.write(str({'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}))
+    log = {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2}
+    with open(save_path_logs / f"{filename.split('.')[0]}.json", 'w') as f:
+        json.dump(log, f, indent=2)
 
     # save lungs mask after resizing them
     try:
@@ -106,7 +108,7 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
         device += ":0"
 
     segm_model = segm_model.to(device)
-    pbar = tqdm(dataloader, desc="Segmenting and cropping images", unit="batches")
+    pbar = tqdm(dataloader, desc="Segmenting and cropping images", unit="batch")
 
     for batch in pbar:
         tensor_batch, original_sizes, filenames = batch
