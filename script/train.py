@@ -70,6 +70,7 @@ if __name__ == "__main__":
     parser.add_argument('-w2', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
     parser.add_argument('-m', '--load_memory', type=bool, default=False, help="Whether to load all images into memory")
+    parser.add_argument('-i', '--info', type=str, default="", help="Information for logging")
 
     # parse command line arguments
     args = parser.parse_args()
@@ -106,6 +107,8 @@ if __name__ == "__main__":
     weights = args.weights.casefold()
     if weights == "none":
         weights = None
+
+    info = args.info
 
     # get dataset info
     match dataset:
@@ -214,6 +217,7 @@ if __name__ == "__main__":
         'workers_train': workers_train,
         'workers_validate': workers_validate,
         'weights': weights,
+        'info': info,
         'criterion': str(criterion),
         'optimizer': str(optimizer)
     }
