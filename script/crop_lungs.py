@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from argparse import ArgumentParser
+from tqdm import tqdm
 import numpy as np
 import torch as th
 from torch.utils.data import DataLoader
@@ -105,8 +106,9 @@ def main(images_path: Path, save_path: Path, batch_size: int = 32, num_workers: 
         device += ":0"
 
     segm_model = segm_model.to(device)
+    pbar = tqdm(dataloader, desc="Segmenting and cropping images", unit="batches")
 
-    for batch in dataloader:
+    for batch in pbar:
         tensor_batch, original_sizes, filenames = batch
         tensor_batch = tensor_batch.to(device)
         

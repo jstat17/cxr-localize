@@ -45,6 +45,11 @@ class XRVDataset(Dataset):
             # load image
             image_path = self.images_path / Path(self.filenames[idx])
             image = skimage.io.imread(image_path)
+
+            # ensure image is grayscale (single channel)
+            if len(image.shape) == 3:
+                image = image[:, :, 0] # (H, W, C) -> (H, W)
+
             original_size = list(image.shape) # (height, width)
 
             # resize to 512 x 512
