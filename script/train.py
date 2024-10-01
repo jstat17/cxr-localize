@@ -11,7 +11,7 @@ from dataset import padchest, chestxray14
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils.train import train_and_evaluate, get_next_run_folder
 from vision.resnet import get_resnet50
-from vision.convnext import get_convnext_base
+from vision.convnext import get_convnext_b, get_convnext_s
 from vision.efficientnet import get_efficientnet_b0
 from vision.swin import get_swin_s
 from loss.wbce import WeightedBCEWithLogitsLoss
@@ -131,8 +131,10 @@ if __name__ == "__main__":
 
         case "convnext":
             match model_size:
-                case "base":
-                    model = get_convnext_base(num_classes, weights)
+                case "s":
+                    model = get_convnext_s(num_classes, weights)
+                case "b":
+                    model = get_convnext_b(num_classes, weights)
 
         case "efficientnet":
             match model_size:
