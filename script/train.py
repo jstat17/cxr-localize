@@ -14,6 +14,7 @@ from vision.resnet import get_resnet50
 from vision.convnext import get_convnext_b, get_convnext_s
 from vision.efficientnet import get_efficientnet_b0
 from vision.swin import get_swin_s
+from vision.vit import get_vit_s
 from loss.wbce import WeightedBCEWithLogitsLoss
 
 """Train a vision model on the given dataset/s.
@@ -145,6 +146,11 @@ if __name__ == "__main__":
             match model_size:
                 case "s":
                     model = get_swin_s(num_classes, weights)
+
+        case "vit":
+            match model_size:
+                case "s":
+                    model = get_vit_s(num_classes, weights)
 
     # set loss function
     match loss:
