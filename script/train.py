@@ -68,7 +68,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loss', type=str, default='bce', help="Loss function")
     parser.add_argument('-p1', '--split_pct1', type=float, default=0.8, help="The training split percent")
     parser.add_argument('-p2', '--split_pct2', type=float, default=0.9, help="The training and validation split percent")
-    parser.add_argument('-o', '--official_split', type=bool, default=False, help="Whether to use the official training split (ignores -p2, -p2)")
+    parser.add_argument('-of', '--official_split', type=bool, default=False, help="Whether to use the official training split (ignores -p2, -p2)")
     parser.add_argument('-w1', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
     parser.add_argument('-w2', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
@@ -181,9 +181,11 @@ if __name__ == "__main__":
             case "chestxray14":
                 train_filenames_path = CXR14_CONF_PATH / 'train_val_list.txt'
                 train_filenames = read_file_lines(train_filenames_path)
+                train_filenames = [filename for filename in train_filenames if filename not in chestxray14.IGNORED_IMAGES]
 
                 validate_filenames_path = CXR14_CONF_PATH / 'test_list.txt'
                 validate_filenames = read_file_lines(validate_filenames_path)
+                validate_filenames = [filename for filename in validate_filenames if filename not in chestxray14.IGNORED_IMAGES]
 
             case "padchest":
                 train_filenames = None
