@@ -64,6 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--parallel', type=bool, default=True, help="Whether to train in parallel on multiple GPUs")
     parser.add_argument('-n', '--num_epochs', type=int, default=100, help="Number of epochs to train for")
     parser.add_argument('-b', '--batch_size', type=int, default=64, help="Batch size")
+    parser.add_argument('-op', '--optimizer', type=str, default="AdamW", help="The optimizer to use")
     parser.add_argument('-lr', '--learning_rate', type=str, default=1e-3, help="Initial learning rate")
     parser.add_argument('-l', '--loss', type=str, default='bce', help="Loss function")
     parser.add_argument('-p1', '--split_pct1', type=float, default=0.8, help="The training split percent")
@@ -96,6 +97,8 @@ if __name__ == "__main__":
 
     num_epochs = args.num_epochs
     batch_size = args.batch_size
+
+    optimizer_name = args.optimizer.casefold()
     learning_rate = float(args.learning_rate)
     loss = args.loss.casefold()
 
@@ -164,10 +167,18 @@ if __name__ == "__main__":
             criterion = WeightedBCEWithLogitsLoss()
 
     # set optimizer
-    optimizer = optim.AdamW(
-        params = model.parameters(),
-        lr = learning_rate
-    )
+    match optimizer_name:
+        case "adamw":
+            optimizer = optim.AdamW(
+                params = model.parameters(),
+                lr = learning_rate
+            )
+            
+        case "adam":
+            optimizer = optim.Adam(
+                params = model.parameters(),
+                lr = learning_rate
+            )
 
     # data loaders
     if load_memory:
