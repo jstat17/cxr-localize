@@ -8,6 +8,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 
 from dataset import padchest, chestxray14
+from dataset.utils import read_file_lines
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils.train import train_and_evaluate, get_next_run_folder
 from vision.resnet import get_resnet50
@@ -67,6 +68,7 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--loss', type=str, default='bce', help="Loss function")
     parser.add_argument('-p1', '--split_pct1', type=float, default=0.8, help="The training split percent")
     parser.add_argument('-p2', '--split_pct2', type=float, default=0.9, help="The training and validation split percent")
+    parser.add_argument('-o', '--official_split', type=bool, default=False, help="Whether to use the official training split (ignores -p2, -p2)")
     parser.add_argument('-w1', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
     parser.add_argument('-w2', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
@@ -99,6 +101,7 @@ if __name__ == "__main__":
 
     split_pct1 = args.split_pct1
     split_pct2 = args.split_pct2
+    official_split = args.official_split
 
     workers_train = args.workers_train
     workers_validate = args.workers_validate
@@ -116,6 +119,7 @@ if __name__ == "__main__":
         case "padchest":
             df = padchest.get_padchest_dataframe(PADCHEST_CONF_PATH)
             possible_labels = padchest.PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
+
         
         case "chestxray14":
             df = chestxray14.get_chestxray14_dataframe(CXR14_CONF_PATH)
@@ -171,6 +175,24 @@ if __name__ == "__main__":
     else:
         dataset_class = MulticlassDataset
 
+    # consider using official split of the dataset
+    if official_split:
+        match dataset:
+            case "chestxray14":
+                train_filenames_path = CXR14_CONF_PATH / 'train_val_list.txt'
+                train_filenames = read_file_lines(train_filenames_path)
+
+                validate_filenames_path = CXR14_CONF_PATH / 'test_list.txt'
+                validate_filenames = read_file_lines(validate_filenames_path)
+
+            case "padchest":
+                train_filenames = None
+                validate_filenames = None
+
+    else:
+        train_filenames = None
+        validate_filenames = None
+
     train_dataset = dataset_class(
         df = df,
         images_path = images_path,
@@ -178,7 +200,8 @@ if __name__ == "__main__":
         split = "train",
         split_pct1 = split_pct1,
         split_pct2 = split_pct2,
-        possible_labels = possible_labels
+        possible_labels = possible_labels,
+        filenames = train_filenames
     )
     train_loader = DataLoader(
         dataset = train_dataset,
@@ -194,7 +217,8 @@ if __name__ == "__main__":
         split = "validate",
         split_pct1 = split_pct1,
         split_pct2 = split_pct2,
-        possible_labels = possible_labels
+        possible_labels = possible_labels,
+        filenames = validate_filenames
     )
     validate_loader = DataLoader(
         dataset = validate_dataset,
@@ -222,6 +246,7 @@ if __name__ == "__main__":
         'learning_rate': learning_rate,
         'split_pct1': split_pct1,
         'split_pct2': split_pct2,
+        'official_split': official_split,
         'workers_train': workers_train,
         'workers_validate': workers_validate,
         'weights': weights,

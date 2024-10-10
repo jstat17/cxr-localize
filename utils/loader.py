@@ -72,7 +72,7 @@ class XRVDataset(Dataset):
 
 class MulticlassDataset(Dataset):
 
-    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, split_pct1: float, split_pct2, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
+    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, split_pct1: float, split_pct2, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT, filenames: list[str] | None = None) -> None:
         self.df = df.copy(deep=False)
         self.images_path = images_path
 
@@ -90,7 +90,11 @@ class MulticlassDataset(Dataset):
         self.hash_split1 = int(self.possible_hashes * self.split_pct1)
         self.hash_split2 = int(self.possible_hashes * self.split_pct2)
 
-        self.filenames = self._get_filenames(df)
+        if filenames is None:
+            self.filenames = self._get_filenames(df)
+        else:
+            self.filenames = filenames
+
         self.labels = th.from_numpy(
             self._get_labels()
         )
@@ -275,8 +279,8 @@ class MulticlassDataset(Dataset):
 
 class MulticlassDatasetInMemory(MulticlassDataset):
 
-    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, split_pct1: float, split_pct2, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT) -> None:
-        super().__init__(df, images_path, img_shape, split, split_pct1, split_pct2, possible_labels, second_norm_dict)
+    def __init__(self, df: pd.DataFrame, images_path: Path, img_shape: int | tuple[int, int], split: str, split_pct1: float, split_pct2, possible_labels: list[str], second_norm_dict: dict[str, list] | None = PYTORCH_SECOND_NORMALIZATION_DICT, filenames: list[str] | None = None) -> None:
+        super().__init__(df, images_path, img_shape, split, split_pct1, split_pct2, possible_labels, second_norm_dict, filenames)
         
         self.images = th.from_numpy(
             self._load_normalize_all_images()

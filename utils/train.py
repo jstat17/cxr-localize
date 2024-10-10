@@ -83,7 +83,10 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
         )
         evaluate.print_metrics(metrics)
 
-        # save the model checkpoint if evaluation loss is lower than in the previous epoch
+        # save the last model checkpoint
+        save_checkpoint(epoch, model, optimizer, last_checkpoint_path)
+
+        # save the best model checkpoint if evaluation loss is lower than in the previous epoch
         curr_epoch_eval_loss = metrics[f"{evaluation_split}_loss"]
         if (
             prev_epoch_eval_loss is None
@@ -93,7 +96,9 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
             save_checkpoint(epoch, model, optimizer, best_checkpoint_path)
             print("-- New best --")
 
-        save_checkpoint(epoch, model, optimizer, last_checkpoint_path)
+        # if the evaluation loss is worse, decrease learning rate by an order of magnitude
+        else:
+            optimizer.param_groups[0]['lr'] /= 10
 
         # save performance logs
         performance_curves['epoch'].append(epoch)

@@ -72,3 +72,17 @@ def extract_files_from_gzips(gzips_path: Path, extract_path: Path) -> None:
                             n_extracted += 1
 
         print(f"Extracted {n_extracted} file/s from {gzip_path}")
+
+def read_file_lines(file_path: Path) -> list[str]:
+    """Read all lines of a file (ignoring blank lines) into an array of strings
+
+    Args:
+        file_path (Path): Path to the text file
+
+    Returns:
+        list[str]: List of file contents line-by-line
+    """
+    with open(file_path, 'r') as file:
+        lines = [line.strip() for line in file if line.strip()]
+    
+    return lines
