@@ -110,8 +110,8 @@ if __name__ == "__main__":
     workers_train = args.workers_train
     workers_validate = args.workers_validate
 
-    load_memory_train = args.load_memory_train.casefold()[0]
-    load_memory_validate = args.load_memory_validate.casefold()[0]
+    load_memory_train = args.load_memory_train.casefold()[0] == "t"
+    load_memory_validate = args.load_memory_validate.casefold()[0] == "t"
 
     weights = args.weights.casefold()
     if weights == "none":
