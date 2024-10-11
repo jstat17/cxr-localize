@@ -73,7 +73,8 @@ if __name__ == "__main__":
     parser.add_argument('-w1', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
     parser.add_argument('-w2', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
-    parser.add_argument('-m', '--load_memory', type=bool, default=False, help="Whether to load all images into memory")
+    parser.add_argument('-mt', '--load_memory_train', type=bool, default=False, help="Whether to load all training images into memory")
+    parser.add_argument('-mv', '--load_memory_validate', type=bool, default=False, help="Whether to load all validation images into memory")
     parser.add_argument('-i', '--info', type=str, default="", help="Information for logging")
 
     # parse command line arguments
@@ -109,7 +110,8 @@ if __name__ == "__main__":
     workers_train = args.workers_train
     workers_validate = args.workers_validate
 
-    load_memory = args.load_memory
+    load_memory_train = args.load_memory_train
+    load_memory_validate = args.load_memory_validate
 
     weights = args.weights.casefold()
     if weights == "none":
@@ -183,10 +185,15 @@ if __name__ == "__main__":
             )
 
     # data loaders
-    if load_memory:
-        dataset_class = MulticlassDatasetInMemory
+    if load_memory_train:
+        dataset_class_train = MulticlassDatasetInMemory
     else:
-        dataset_class = MulticlassDataset
+        dataset_class_train = MulticlassDataset
+
+    if load_memory_validate:
+        dataset_class_validate = MulticlassDatasetInMemory
+    else:
+        dataset_class_validate = MulticlassDataset
 
     # consider using official split of the dataset
     if official_split:
@@ -208,7 +215,7 @@ if __name__ == "__main__":
         train_filenames = None
         validate_filenames = None
 
-    train_dataset = dataset_class(
+    train_dataset = dataset_class_train(
         df = df,
         images_path = images_path,
         img_shape = image_size,
@@ -225,7 +232,7 @@ if __name__ == "__main__":
         shuffle = True
     )
 
-    validate_dataset = MulticlassDatasetInMemory(
+    validate_dataset = dataset_class_validate(
         df = df,
         images_path = images_path,
         img_shape = image_size,
