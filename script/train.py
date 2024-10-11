@@ -124,7 +124,6 @@ if __name__ == "__main__":
         case "padchest":
             df = padchest.get_padchest_dataframe(PADCHEST_CONF_PATH)
             possible_labels = padchest.PADCHEST_ABNORMALITIES_COMMON_SHENZHEN
-
         
         case "chestxray14":
             df = chestxray14.get_chestxray14_dataframe(CXR14_CONF_PATH)
@@ -199,13 +198,17 @@ if __name__ == "__main__":
     if official_split:
         match dataset:
             case "chestxray14":
+                available_image_filenames = set(os.listdir(images_path))
+
                 train_filenames_path = CXR14_CONF_PATH / 'train_val_list.txt'
                 train_filenames = read_file_lines(train_filenames_path)
                 train_filenames = [filename for filename in train_filenames if filename not in chestxray14.IGNORED_IMAGES]
+                train_filenames = [filename for filename in train_filenames if filename in available_image_filenames]
 
                 validate_filenames_path = CXR14_CONF_PATH / 'test_list.txt'
                 validate_filenames = read_file_lines(validate_filenames_path)
                 validate_filenames = [filename for filename in validate_filenames if filename not in chestxray14.IGNORED_IMAGES]
+                validate_filenames = [filename for filename in validate_filenames if filename in available_image_filenames]
 
             case "padchest":
                 train_filenames = None
