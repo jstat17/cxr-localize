@@ -13,7 +13,7 @@ from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils.train import train_and_evaluate, get_next_run_folder
 from vision.resnet import get_resnet50
 from vision.convnext import get_convnext_b, get_convnext_s
-from vision.efficientnet import get_efficientnet_b0
+from vision.efficientnet import get_efficientnet_b0, get_efficientnet_b4
 from vision.swin import get_swin_s
 from vision.vit import get_vit_s
 from loss.wbce import WeightedBCEWithLogitsLoss
@@ -148,6 +148,8 @@ if __name__ == "__main__":
             match model_size:
                 case "b0":
                     model = get_efficientnet_b0(num_classes, weights)
+                case "b4":
+                    model = get_efficientnet_b4(num_classes, weights)
 
         case "swin":
             match model_size:
@@ -173,7 +175,7 @@ if __name__ == "__main__":
                 params = model.parameters(),
                 lr = learning_rate
             )
-            
+
         case "adam":
             optimizer = optim.Adam(
                 params = model.parameters(),
