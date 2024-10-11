@@ -73,8 +73,8 @@ if __name__ == "__main__":
     parser.add_argument('-wt', '--workers_train', type=int, default=32, help="Number of training dataloader workers")
     parser.add_argument('-wv', '--workers_validate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Initial weights to use for the model ('imagenet' or 'None')")
-    parser.add_argument('-mt', '--load_memory_train', type=bool, default=False, help="Whether to load all training images into memory")
-    parser.add_argument('-mv', '--load_memory_validate', type=bool, default=False, help="Whether to load all validation images into memory")
+    parser.add_argument('-mt', '--load_memory_train', type=str, default="False", help="Whether to load all training images into memory")
+    parser.add_argument('-mv', '--load_memory_validate', type=str, default="False", help="Whether to load all validation images into memory")
     parser.add_argument('-i', '--info', type=str, default="", help="Information for logging")
 
     # parse command line arguments
@@ -110,8 +110,8 @@ if __name__ == "__main__":
     workers_train = args.workers_train
     workers_validate = args.workers_validate
 
-    load_memory_train = args.load_memory_train
-    load_memory_validate = args.load_memory_validate
+    load_memory_train = args.load_memory_train.casefold()[0]
+    load_memory_validate = args.load_memory_validate.casefold()[0]
 
     weights = args.weights.casefold()
     if weights == "none":
