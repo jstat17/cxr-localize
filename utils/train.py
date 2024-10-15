@@ -103,7 +103,7 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
         print(f"Train Loss: {train_loss:.4f}")
         
         # evaluate the model on the evaluation_loader
-        metrics = evaluate.evaluate_model(
+        metrics, _raw = evaluate.evaluate_model(
             model = model,
             loader = evaluation_loader,
             split = evaluation_split,

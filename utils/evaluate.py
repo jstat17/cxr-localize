@@ -76,7 +76,14 @@ def evaluate_model(model: nn.Module, loader: DataLoader, split: str, device: str
 
     metrics[f'{split}_loss'] = sum(all_losses) / len(all_losses)
 
-    return metrics
+    # raw predictions
+    raw = {
+        'probas': all_probas,
+        'preds': all_preds,
+        'labels': all_labels
+    }
+
+    return metrics, raw
 
 def print_metrics(metrics: dict[str: float], cols: int = 3) -> None:
     keys = list(metrics.keys())
