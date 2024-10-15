@@ -50,7 +50,7 @@ def get_efficientnet_b0(num_classes: int, weights: str | dict | None = None) -> 
     match pretrained_weights:
         # load imagenet 1k weights
         case "imagenet":
-            loaded_weights = EfficientNet_B0_Weights.IMAGENET1K_V2
+            loaded_weights = EfficientNet_B0_Weights.IMAGENET1K_V1
 
         # use random weights
         case None:
@@ -80,7 +80,7 @@ def get_efficientnet_b4(num_classes: int, weights: str | dict | None = None) -> 
     match pretrained_weights:
         # load imagenet 1k weights
         case "imagenet":
-            loaded_weights = EfficientNet_B4_Weights.IMAGENET1K_V2
+            loaded_weights = EfficientNet_B4_Weights.IMAGENET1K_V1
 
         # use random weights
         case None:
