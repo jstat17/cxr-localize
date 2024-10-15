@@ -2,7 +2,7 @@ import torch as th
 import torch.nn as nn
 from torch.utils.data import DataLoader
 import os
-import json
+import pickle as pk
 from pathlib import Path
 from argparse import ArgumentParser
 
@@ -50,14 +50,14 @@ def main(device: str, parallel: bool, model: nn.Module, criterion: nn.Module, ev
         criterion = criterion
     )
 
-    # save evaluation outputs to json
+    # save evaluation outputs as pickle
     output = {
         'metrics': metrics,
         'raw': raw
     }
-    output_save_path = save_dir / f"{model_name}-evaluation.json"
-    with open(output_save_path, 'w') as f:
-        json.dump(output, f, indent=2)
+    output_save_path = save_dir / f"{model_name}-evaluation.pk"
+    with open(output_save_path, 'wb') as f:
+        pk.dump(output, f)
 
 if __name__ == "__main__":
     # set up argument parsing
