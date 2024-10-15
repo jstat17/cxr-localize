@@ -31,7 +31,7 @@ CXR14_CONF_PATH = DATASETS_PATH / "ChestX-ray14"
 MODELS_PATH = HOME / "models"
 
 def main(device: str, parallel: bool, model: nn.Module, criterion: nn.Module, optimizer: optim.Optimizer,\
-         train_loader: DataLoader, evaluate_loader: DataLoader, save_dir: Path):
+         train_loader: DataLoader, evaluate_loader: DataLoader, accumulation_factor: int, save_dir: Path):
     # use DataParallel if parallel is enabled
     if not parallel:
         device += ":0"
@@ -49,6 +49,7 @@ def main(device: str, parallel: bool, model: nn.Module, criterion: nn.Module, op
         criterion = criterion,
         device = device,
         num_epochs = num_epochs,
+        accumulation_factor = accumulation_factor,
         save_dir = save_dir
     )
 
@@ -295,5 +296,6 @@ if __name__ == "__main__":
         optimizer = optimizer,
         train_loader = train_loader,
         evaluate_loader = validate_loader,
+        accumulation_factor = accumulation_factor,
         save_dir = save_dir
     )
