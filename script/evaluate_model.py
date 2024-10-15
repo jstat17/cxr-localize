@@ -72,7 +72,7 @@ if __name__ == "__main__":
     parser.add_argument('-p1', '--split_pct1', type=float, default=0.8, help="The training split percent")
     parser.add_argument('-p2', '--split_pct2', type=float, default=0.9, help="The training and validation split percent")
     parser.add_argument('-of', '--official_split', type=bool, default=False, help="Whether to use the official training split (ignores -p2, -p2)")
-    parser.add_argument('-wv', '--workers_evaluate', type=int, default=8, help="Number of validation dataloader workers")
+    parser.add_argument('-we', '--workers_evaluate', type=int, default=8, help="Number of validation dataloader workers")
     parser.add_argument('-wg', '--weights', type=str, default='imagenet', help="Weights to use for the model ('imagenet', 'None' or path/to/weights)")
 
     # parse command line arguments
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     weights = args.weights
     if "/" in weights:
         state_dict_path = Path(weights)
-        weights = th.load(state_dict_path)
+        weights = th.load(state_dict_path)['model_state_dict']
     
     else:
         weights = weights.casefold()
