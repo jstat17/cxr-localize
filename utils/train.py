@@ -126,8 +126,8 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
             print("-- New best --")
 
         # if the evaluation loss is worse, decrease learning rate by an order of magnitude
-        else:
-            optimizer.param_groups[0]['lr'] /= 10
+        # else:
+        #     optimizer.param_groups[0]['lr'] /= 10
 
         # save performance logs
         performance_curves['epoch'].append(epoch)
