@@ -32,6 +32,8 @@ EVALUATION_PATH = MODELS_PATH / "evaluate"
 
 def main(device: str, parallel: bool, model: nn.Module, criterion: nn.Module, evaluate_loader: DataLoader,\
          save_dir: Path):
+    model_name = model.fullname
+
     # use DataParallel if parallel is enabled
     if not parallel:
         device += ":0"
@@ -53,7 +55,7 @@ def main(device: str, parallel: bool, model: nn.Module, criterion: nn.Module, ev
         'metrics': metrics,
         'raw': raw
     }
-    output_save_path = save_dir / f"{model.fullname}-evaluation.json"
+    output_save_path = save_dir / f"{model_name}-evaluation.json"
     with open(output_save_path, 'w') as f:
         json.dump(output, f, indent=2)
 
