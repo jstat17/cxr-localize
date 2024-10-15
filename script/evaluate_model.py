@@ -17,9 +17,9 @@ from vision.swin import get_swin_s
 from vision.vit import get_vit_s
 from loss.wbce import WeightedBCEWithLogitsLoss
 
-"""Train a vision model on the given dataset/s.
+"""Evaluate vision model on the given dataset/s.
    Run from cxr-localize:
-        python -m script.train ..args..
+        python -m script.evaluate_model ..args..
 """
 
 # directory constants
