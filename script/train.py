@@ -64,6 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('-p', '--parallel', type=bool, default=True, help="Whether to train in parallel on multiple GPUs")
     parser.add_argument('-n', '--num_epochs', type=int, default=100, help="Number of epochs to train for")
     parser.add_argument('-b', '--batch_size', type=int, default=64, help="Batch size")
+    parser.add_argument('-a', '--accumulation_factor', type=int, default=1, help="Accumulation factor. Defaults to 1 (update model weights every batch)")
     parser.add_argument('-op', '--optimizer', type=str, default="AdamW", help="The optimizer to use")
     parser.add_argument('-lr', '--learning_rate', type=str, default=1e-3, help="Initial learning rate")
     parser.add_argument('-l', '--loss', type=str, default='bce', help="Loss function")
@@ -98,6 +99,7 @@ if __name__ == "__main__":
 
     num_epochs = args.num_epochs
     batch_size = args.batch_size
+    accumulation_factor = args.accumulation_factor
 
     optimizer_name = args.optimizer.casefold()
     learning_rate = float(args.learning_rate)
@@ -268,6 +270,7 @@ if __name__ == "__main__":
         'parallel': parallel,
         'num_epochs': num_epochs,
         'batch_size': batch_size,
+        'accumulation_factor': accumulation_factor,
         'learning_rate': learning_rate,
         'split_pct1': split_pct1,
         'split_pct2': split_pct2,

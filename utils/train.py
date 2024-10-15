@@ -12,16 +12,36 @@ from typing import Any
 from utils import evaluate
 
 def train_one_epoch(epoch: int, num_epochs: int, model: nn.Module, train_loader: DataLoader,\
-                    optimizer: optim.Optimizer, criterion: nn.Module, device: str):
+                    optimizer: optim.Optimizer, criterion: nn.Module, device: str, accumulation_factor: int = 1):
+    """Train the model for one epoch.
+
+    Args:
+        epoch (int): The current epoch number.
+        num_epochs (int): The total number of epochs.
+        model (nn.Module): The model to be trained.
+        train_loader (DataLoader): The data loader for the training set.
+        optimizer (optim.Optimizer): The optimizer to be used.
+        criterion (nn.Module): The loss function to be used.
+        device (str): The device to be used ('cuda' or 'cpu').
+        accumulation_factor (int, optional): The gradient accumulation factor. Defaults to 1.
+
+    Returns:
+        _type_: _description_
+    """
     model.train()
     running_loss = 0.0
     progress_bar = tqdm(train_loader, desc=f"Epoch {epoch + 1}/{num_epochs}", unit="batch")
+
+    # initialize the gradient accumulation counter
+    accumulation_counter = 0
+    n_batches = len(train_loader)
 
     for i, (images, labels) in enumerate(progress_bar):
         images, labels = images.to(device), labels.to(device)
 
         # zero all gradients
-        optimizer.zero_grad()
+        if accumulation_counter == 0:
+            optimizer.zero_grad()
 
         # forward pass
         outputs = model(images)
@@ -29,15 +49,23 @@ def train_one_epoch(epoch: int, num_epochs: int, model: nn.Module, train_loader:
         # compute loss
         loss = criterion(outputs, labels.float())
         
-        # backward pass and optimization
+        # backward pass
         loss.backward()
-        optimizer.step()
+
+        # Increment the accumulation counter
+        accumulation_counter += 1
+
+        # If the accumulation factor is reached or it's the last batch, perform optimization
+        if accumulation_counter == accumulation_factor or i == n_batches - 1:
+            optimizer.step()
+            accumulation_counter = 0
 
         # update running loss
         running_loss += loss.item()
         progress_bar.set_postfix(loss=running_loss / (i + 1))
 
-    return running_loss / len(train_loader)
+    return running_loss / n_batches
+
 
 def save_checkpoint(epoch: int, model: nn.Module, optimizer: optim.Optimizer, checkpoint_path: Path):
     state = {
@@ -53,7 +81,7 @@ def save_performance_log(performance_dict: dict[str, list[Any]], log_path: Path)
 
 def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_loader: DataLoader,\
                        evaluation_split: str, optimizer: optim.Optimizer, criterion: nn.Module,\
-                       device: str, num_epochs: int, save_dir: Path) -> None:
+                       device: str, num_epochs: int, accumulation_factor: int, save_dir: Path) -> None:
     last_checkpoint_path = save_dir / "model_checkpoint.pth"
     best_checkpoint_path = save_dir / "model_best.pth"
     log_path = save_dir / "log.json"
@@ -69,7 +97,8 @@ def train_and_evaluate(model: nn.Module, train_loader: DataLoader, evaluation_lo
             train_loader = train_loader,
             optimizer = optimizer,
             criterion = criterion,
-            device = device
+            device = device,
+            accumulation_factor = accumulation_factor
         )
         print(f"Train Loss: {train_loss:.4f}")
         
