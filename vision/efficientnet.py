@@ -3,7 +3,7 @@ from torch import nn
 from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 from torchvision.models import efficientnet_b4, EfficientNet_B4_Weights
 
-from vision.utils import linearize_state_dict
+from vision.vision_utils import linearize_state_dict
 
 class EfficientNet_B0(nn.Module):
     def __init__(self, num_classes: int, weights: EfficientNet_B0_Weights | None) -> None:

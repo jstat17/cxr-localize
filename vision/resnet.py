@@ -2,7 +2,7 @@ import torch as th
 from torch import nn
 from torchvision.models import resnet50, ResNet50_Weights
 
-from vision.utils import linearize_state_dict
+from vision.vision_utils import linearize_state_dict
 
 
 class ResNet50(nn.Module):
