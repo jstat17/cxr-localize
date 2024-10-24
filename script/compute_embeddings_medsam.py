@@ -13,7 +13,7 @@ from vision.segment_anything.medsam import get_medsam_image_encoder
 """
 
 
-def main(images_path: Path, save_dir: Path, batch_size: int, num_workers: int, parallel: bool) -> None:
+def main(images_path: Path, save_dir: Path, batch_size: int, num_workers: int, parallel: bool, device: str) -> None:
     model = get_medsam_image_encoder()
     
     dataset = PaddedImageDataset(
@@ -30,6 +30,7 @@ def main(images_path: Path, save_dir: Path, batch_size: int, num_workers: int, p
     embeddings_dict = get_embeddings(
         model = model,
         dataloader = dataloader,
+        device = device,
         parallel = parallel
     )
 
@@ -44,7 +45,8 @@ if __name__ == "__main__":
     parser.add_argument('save_dir', type=str, help="Desired save path for the file of embeddings")
     parser.add_argument('-b', '--batch_size', type=int, default=8, help="Batch size")
     parser.add_argument('-w', '--num_workers', type=int, default=8, help="Number of workers")
-    parser.add_argument('-p', '--parallel', type=str, default="True", help="Whether to train in parallel on multiple GPUs")
+    parser.add_argument('-p', '--parallel', type=str, default="True", help="Whether to evaluate in parallel on multiple GPUs")
+    parser.add_argument('-d', '--device', type=str, default="cuda", help="The device to use for inference")
 
     # parse command line arguments
     args = parser.parse_args()
@@ -63,10 +65,13 @@ if __name__ == "__main__":
         case _:
             parallel = False
 
+    device = args.device
+
     main(
         images_path = images_path,
         save_dir = save_dir,
         batch_size = batch_size,
         num_workers = num_workers,
-        parallel = parallel
+        parallel = parallel,
+        device = device
     )
