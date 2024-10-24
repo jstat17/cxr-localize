@@ -104,16 +104,21 @@ def get_embeddings(model: nn.Module, dataloader: DataLoader, device: str, parall
         device += ":0"
     
     model = model.to(device)
+    model.eval()
     pbar = tqdm(dataloader, desc="Computing embeddings", unit="batch")
 
     embeddings_dict = dict()
     for batch in pbar:
         images, filenames = batch
+        images = images.to(device)
         with th.no_grad():
             embeddings = model(images)
 
         embeddings = embeddings.detach().cpu().numpy()
         for embedding, filename in zip(embeddings, filenames):
             embeddings_dict[filename] = embedding
+
+        # clear out intermediate results
+        th.cuda.empty_cache()
 
     return embeddings_dict
