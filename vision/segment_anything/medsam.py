@@ -9,6 +9,7 @@ SAM_NORMALIZATION_DICT = {
     'mean': [123.675, 116.28, 103.53],
     'std': [58.395, 57.12, 57.375]
 }
+CHECKPOINT_PATH = Path.home() / "medsam-weights" / "medsam_vit_b.pth"
 
 
 class MedSAM_Encoder(nn.Module):
@@ -60,6 +61,9 @@ class MedSAM_Encoder(nn.Module):
         return x
 
 
-def get_medsam_image_encoder(checkpoint_path: Path):
-    model = MedSAM_Encoder(checkpoint_path)
+def get_medsam_image_encoder():
+    model = MedSAM_Encoder(
+        checkpoint_path = CHECKPOINT_PATH
+    )
+    
     return model

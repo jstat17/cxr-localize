@@ -226,7 +226,7 @@ def extract_files_from_zips(zip_to_filenames: dict[int, list[str]], padchest_pat
                 
                 pbar.update(1)
 
-        print(f"Extracted {n_extracted} file/s from {zip_path}")
+    pbar.close()
 
 def verify_sha1sums(padchest_path: Path) -> None:
     """Verify the SHA-1 sums of the original PadChest files
