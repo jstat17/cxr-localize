@@ -7,6 +7,7 @@ from ast import literal_eval
 from zipfile import ZipFile
 import hashlib
 from collections import defaultdict
+from tqdm import tqdm
 
 from dataset.utils import intersect_iters
 
@@ -202,6 +203,14 @@ def extract_files_from_zips(zip_to_filenames: dict[int, list[str]], padchest_pat
     existing_filenames = set(
         os.listdir(extract_path)
     )
+    n_files = sum(
+        [len(L) for L in zip_to_filenames.values()]
+    )
+    pbar = tqdm(
+        total = n_files,
+        desc = "Extracting files",
+        unit = "file"
+    )
 
     for zip_num, filenames in zip_to_filenames.items():
         zip_path = padchest_path / f"{zip_num}.zip"
@@ -214,6 +223,8 @@ def extract_files_from_zips(zip_to_filenames: dict[int, list[str]], padchest_pat
                 if filename in filenames and filename not in existing_filenames:
                     z.extract(filename, path=extract_path)
                     n_extracted += 1
+                
+                pbar.update(1)
 
         print(f"Extracted {n_extracted} file/s from {zip_path}")
 
