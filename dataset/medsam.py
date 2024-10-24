@@ -104,7 +104,7 @@ def get_embeddings(model: nn.Module, dataloader: DataLoader, device: str, parall
         device += ":0"
     
     model = model.to(device)
-    pbar = tqdm(dataloader, desc="Computing embedding", unit="batch")
+    pbar = tqdm(dataloader, desc="Computing embeddings", unit="batch")
 
     embeddings_dict = dict()
     for batch in pbar:
