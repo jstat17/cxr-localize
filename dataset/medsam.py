@@ -9,7 +9,7 @@ import os
 import skimage
 
 from vision.segment_anything.medsam import SAM_NORMALIZATION_DICT
-from ..utils import transform
+from utils import transform
 
 
 class PaddedImageDataset(Dataset):

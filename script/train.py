@@ -8,7 +8,7 @@ from pathlib import Path
 from argparse import ArgumentParser
 
 from dataset import padchest, chestxray14
-from dataset.utils import read_file_lines
+from dataset.dataset_utils import read_file_lines
 from utils.loader import MulticlassDataset, MulticlassDatasetInMemory
 from utils.train import train_and_evaluate, get_next_run_folder
 from vision.resnet import get_resnet50

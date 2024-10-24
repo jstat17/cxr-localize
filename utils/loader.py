@@ -11,7 +11,7 @@ from tqdm import tqdm
 from typing import Any
 
 from utils import transform
-from dataset.utils import get_iter_to_iter_dict
+from dataset.dataset_utils import get_iter_to_iter_dict
 
 PYTORCH_SECOND_NORMALIZATION_DICT = {
     'mean': [0.485, 0.456, 0.406],

@@ -9,7 +9,7 @@ import hashlib
 from collections import defaultdict
 from tqdm import tqdm
 
-from dataset.utils import intersect_iters
+from dataset.dataset_utils import intersect_iters
 
 ## Global constants
 # columns to use for PadChest dataframe
