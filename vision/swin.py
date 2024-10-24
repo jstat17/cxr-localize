@@ -3,7 +3,7 @@ from torch import nn
 from torchvision.models import swin_s, Swin_S_Weights
 
 class Swin_S(nn.Module):
-    def __init__(self, num_classes: int, weights: dict | None) -> None:
+    def __init__(self, num_classes: int, weights: Swin_S_Weights | None) -> None:
         super().__init__()
         self.fullname = "Swin-S"
         self.model = swin_s(

@@ -115,11 +115,13 @@ PADCHEST_DISEASES = [
 
 
 ## Data management functions
-def get_padchest_dataframe(padchest_path: Path) -> pd.DataFrame:
+def get_padchest_dataframe(padchest_path: Path, projections_kept: list[str] | None = PROJECTIONS_KEPT, labels_kept: list[str] | None = PADCHEST_ABNORMALITIES_COMMON_SHENZHEN) -> pd.DataFrame:
     """Get the PadChest information dataframe of filenames, containing zip, labels etc.
 
     Args:
         padchest_path (Path): Path to originally-downloaded PadChest dataset
+        projections_kept (list[str] | None, optional): List of projections to keep. If None keep all. Defaults to PROJECTIONS_KEPT.
+        labels_kept (list[str] | None, optional): _description_. Defaults to PADCHEST_ABNORMALITIES_COMMON_SHENZHEN.
 
     Returns:
         pd.DataFrame: Dataframe of PadChest information
@@ -158,9 +160,10 @@ def get_padchest_dataframe(padchest_path: Path) -> pd.DataFrame:
     df = df[~df.isna().any(axis=1)]
 
     # keep only specified projections
-    df = df[
-        df['Projection'].isin(PROJECTIONS_KEPT)
-    ]
+    if projections_kept is not None:
+        df = df[
+            df['Projection'].isin(PROJECTIONS_KEPT)
+        ]
 
     # evaluate the string representations of the label and localization lists
     df['Labels'] = df['Labels'].apply(literal_eval)
@@ -174,12 +177,13 @@ def get_padchest_dataframe(padchest_path: Path) -> pd.DataFrame:
     df['Labels'] = df['Labels'].apply(strip_remove_blank)
     df['Localizations'] = df['Localizations'].apply(strip_remove_blank)
 
-    # keep only entries with abnormality labels that are common with Shenzhen
-    df = df[
-        df['Labels'].apply(
-            lambda labels: intersect_iters(labels, PADCHEST_ABNORMALITIES_COMMON_SHENZHEN)
-        )
-    ]
+    # keep only the selected abnormality labels
+    if labels_kept is not None:
+        df = df[
+            df['Labels'].apply(
+                lambda labels: intersect_iters(labels, labels_kept)
+            )
+        ]
 
     # reset index after all modifications
     df.reset_index(drop=True, inplace=True)

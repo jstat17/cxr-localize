@@ -5,7 +5,7 @@ from torchvision.models import convnext_small, ConvNeXt_Small_Weights
 
 
 class ConvNeXt_B(nn.Module):
-    def __init__(self, num_classes: int, weights: dict | None) -> None:
+    def __init__(self, num_classes: int, weights: ConvNeXt_Base_Weights | None) -> None:
         super().__init__()
         self.fullname = "ConvNeXt-B"
         self.model = convnext_base(
@@ -22,7 +22,7 @@ class ConvNeXt_B(nn.Module):
         return x
     
 class ConvNeXt_S(nn.Module):
-    def __init__(self, num_classes: int, weights: dict | None) -> None:
+    def __init__(self, num_classes: int, weights: ConvNeXt_Small_Weights | None) -> None:
         super().__init__()
         self.fullname = "ConvNeXt-S"
         self.model = convnext_small(
